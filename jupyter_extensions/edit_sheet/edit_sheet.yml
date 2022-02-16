@@ -1,0 +1,9 @@
+Type: Jupyter Notebook Extension
+Compatibility: 3.x, 4.x, 5.x
+Name: Edit sheet
+Main: main.js
+Link: README.md
+Description: |
+  Edit the sheet
+Parameters:
+  - none
