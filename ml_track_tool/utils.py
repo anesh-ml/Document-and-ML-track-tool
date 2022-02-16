@@ -115,6 +115,7 @@ def copy(src,dst):
 def save_dict(dict_,file_type,file_path):
     #path="/".join(file_path.split("/")[:-1])
     #file_name=file_path.split("/")[-1]
+    file_path=file_path.replace("\\","/")
     file_type=file_type.lower()
     types=["performance","prediction"]
     if file_type in types:

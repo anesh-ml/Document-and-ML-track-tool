@@ -28,6 +28,7 @@ pd.set_option('colheader_justify', 'center')
 
 def create_application(path):
     app=Flask(__name__)
+    path=path.replace("\\","/")
     current_path=pathlib.Path(__file__).parent.resolve()
     my_loader = jinja2.ChoiceLoader([
         app.jinja_loader,
@@ -47,6 +48,7 @@ def create_application(path):
         
         else:
             folders=os.listdir(path)
+
             return render_template("experiment_page.html",folders=folders)
         
     @app.route('/home2/<experiment>',methods=["POST","GET"])
@@ -76,7 +78,7 @@ def create_application(path):
                 table_path="none"
             
             memory_path=f"{path+'/'+exp_folder}/memory_info/memory_metrics.json"
-            history_path=f"{path+'/'+exp_folder}/performance/history.json"
+            history_path=f"{path+'/'+exp_folder}/performance/performance.json"
             prediction_path=f"{path+'/'+exp_folder}/prediction/prediction.json"
 
             memory_file_path_exists=False
