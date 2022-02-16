@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+
+<head>
+    <style>
+        table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px 20px;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f8f8;
+            font-size: 16px;
+            resize: none;
+        }
+
+        #table_ {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #table_ td,
+        #table_ th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #table_ tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #table_ tr:hover {
+            background-color: #ddd;
+        }
+
+        #table_ th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #04AA6D;
+            color: white;
+        }
+
+        .button {
+            background-color: #1f64cc;
+            /* Green */
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .button1:hover {
+            background-color: #1da52f;
+            color: white;
+        }
+
+        .button2:hover {
+            background-color: #e41e1e;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Experiment Summary</h1>
+    <div id='chart' class='chart'></div>
+    <h2>User notes</h2>
+    <form method="post">
+
+        <input type="button" class="button button1" value="add column" onclick="addColumn('table_')" />
+        <input type="button" class="button button2" value="delete column" onclick="deleteColumn('table_')" />
+        <p>
+            <input type="button" class="button button1" value="add row" name="add_row" onclick="add_rows()" />
+        </p>
+        <p>
+            <input type="button" class="button button1" value="Save table" name="save_table"
+                onclick="download_table_as_csv('table_')" />
+        </p>
+        {% if table_path=="none" %}
+        <p>User info unavailable</p>
+
+        {% else %}
+        {% include table_path %}
+        {% endif %}
+    </form>
+    <br>
+    <br>
+    <h2>Team notes</h2>
+    <form action="#" method="post">
+        <textarea name="text">{{user_notes}}</textarea>
+        <input class="button button1" type="submit" value="Save changes">
+    </form>
+
+</body>
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script type='text/javascript'>
+    var graphs = {{ graphJSON | safe}};
+    Plotly.plot('chart', graphs, {});
+</script>
+<script>
+    function addColumn(tblId) {
+        var tblHeadObj = document.getElementById(tblId).tHead;
+        for (var h = 0; h < tblHeadObj.rows.length; h++) {
+            var newTH = document.createElement('th');
+            tblHeadObj.rows[h].appendChild(newTH);
+            newTH.innerHTML = '';
+        }
+
+        var tblBodyObj = document.getElementById(tblId).tBodies[0];
+        for (var i = 0; i < tblBodyObj.rows.length; i++) {
+            var newCell = tblBodyObj.rows[i].insertCell(-1);
+            newCell.innerHTML = '';
+        }
+    }
+    function deleteColumn(tblId) {
+        var allRows = document.getElementById(tblId).rows;
+        for (var i = 0; i < allRows.length; i++) {
+            if (allRows[i].cells.length > 1) {
+                allRows[i].deleteCell(-1);
+            }
+        }
+    }
+</script>
+
+<script>
+    function download_table_as_csv(table_id, separator = ',') {
+        // Select rows from table_id
+        var rows = document.querySelectorAll('table#' + table_id + ' tr');
+        // Construct csv
+        var csv = [];
+        for (var i = 0; i < rows.length; i++) {
+            var row = [], cols = rows[i].querySelectorAll('td, th');
+            for (var j = 0; j < cols.length; j++) {
+                // Clean innertext to remove multiple spaces and jumpline (break csv)
+                var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
+                // Escape double-quote with double-double-quote (see https://stackoverflow.com/questions/17808511/properly-escape-a-double-quote-in-csv)
+                data = data.replace(/"/g, '""');
+                // Push escaped string
+                row.push('"' + data + '"');
+            }
+            csv.push(row.join(separator));
+        }
+        var csv_string = csv.join('\n');
+        // Download it
+        var filename = 'export_' + table_id + '.csv';
+        var link = document.createElement('a');
+        link.style.display = 'none';
+        link.setAttribute('target', '_blank');
+        link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+<script>
+    function add_rows() {
+        var table = document.getElementById('table_');
+        //var rowCount = table.rows.length;
+        var colCount = table.rows[0].cells.length;
+        var row = table.insertRow(-1);
+        for (let i = 0; i < colCount; i++) {
+            var cell = row.insertCell(i);
+            cell.innerHTML = "NEW ROW";
+        }
+
+
+    }
+
+
+</script>
+
+</html>

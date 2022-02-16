@@ -1,0 +1,18 @@
+<html>
+
+<body>
+    <form method="post">
+        <label for="experiments">Choose the experiment:</label>
+        <select name="experiment" id="exp">
+            {% for folder in folders %}
+            <option value="{{folder}}" ,name="folder">{{folder}}</option>
+            {% endfor %}
+
+        </select>
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+
+</body>
+
+</html>
