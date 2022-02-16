@@ -44,7 +44,7 @@
 
 ### Create columns
 
-**Command**: `create_col} n_col`
+**Command**: `create_col n_col`
 
         Eg: create_col 3
         
@@ -107,5 +107,3 @@
 - User needs to get the probability of the prediction and true labels.
 
         Eg: y_true,y_pred_proba
-# ML_tracking_tool
-# ML_tracking_tool
