@@ -1,9 +1,0 @@
-Type: Jupyter Notebook Extension
-Compatibility: 3.x, 4.x, 5.x
-Name: Experiment application
-Main: main.js
-Link: README.md
-Description: |
-  Open the experiment application
-Parameters:
-  - none

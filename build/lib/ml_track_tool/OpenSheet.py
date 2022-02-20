@@ -41,7 +41,7 @@ def download_sheet(sheet,file):
         df.to_csv(file,index=False)
     elif(file.endswith(".xls")):
         html=df.to_html()
-        html=html.replace('<table border="1" class="dataframe">','<table border="1" width="100%" contenteditable=true  class="table_" id="user_table" onclick="set_id_global(this.id)"')
+        html=html.replace('<table border="1" class="dataframe">','<table border="1" width="100%" contenteditable=true  class="dataframe" id="table_">')
         #if re.search('[a-zA-Z]',path):
         if not os.path.exists(path+f"/notes/"):
             os.makedirs(path+f"/notes/")

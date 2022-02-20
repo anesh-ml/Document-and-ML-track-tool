@@ -19,7 +19,7 @@
 
 ### If opening from **dataframe**:
 
-   **Command**: $ \textit{DataFrame}$ `rows`
+   **Command**: `DataFrame rows`
     
         Eg: df 10 or df
         
@@ -84,7 +84,11 @@
 
 - Download the filled sheet. It will download the latest created and edited sheet.
 
+    - You can save it as **.xls or .csv.**
+
 **Command**: `"./folder/sheet.xls"`
+
+- If you want to save your spreadsheet as notes save it as `notes.xls`.
 
 -------------------------------------------------------------------------------------------------------------------------------
 
@@ -107,3 +111,27 @@
 - User needs to get the probability of the prediction and true labels.
 
         Eg: y_true,y_pred_proba
+
+------------------------------------------------------------------------------------------------------------------------------
+
+## Save dictionary
+
+- Save config files, predictions as json.
+
+- Store the predictions,hyperparameters,etc in dictionary as save it as json.
+
+**Command**: dict variable,file_type,file_path_to_store
+
+   - Eg: `pred_dict,prediction,./experiment2/`
+
+## Experiment application
+
+- All the results saved are displayed in the application. The application can be opened with a single click from jupyter notebook
+
+- Team members can select any experiments and the below information will be displayed
+
+![alt text](memory.JPG "Title")
+
+![alt text](performance.JPG "Title")
+
+![alt text](notes.JPG "Title")

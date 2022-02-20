@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+
+<body>
+    <h1 class="heading">Experiments Summary</h1>
+
+    <div id='chart1' class='chart'></div>
+    <div id='chart2' class='chart'></div>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <script type='text/javascript'>
+        {% if num_graph == 1 %}
+        var graph1 = {{ graphJSON[0] | safe}};
+        Plotly.plot('chart1', graph1, {});
+        {% else %}
+        var graph1 = {{ graphJSON[0] | safe}};
+        var graph2 = {{ graphJSON[1] | safe}};
+        Plotly.plot('chart1', graph1, {});
+        Plotly.plot('chart2', graph2, {});
+        {% endif %}
+    </script>
+</body>
+
+</html>

@@ -2,13 +2,16 @@
 <html>
 
 <head>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
     <style>
         table {
             table-layout: fixed;
             width: 100%;
         }
 
-        textarea {
+        .text_area {
             width: 100%;
             height: 150px;
             padding: 12px 20px;
@@ -20,27 +23,39 @@
             resize: none;
         }
 
-        #table_ {
+        .text_img {
+            width: 100%;
+            height: 100px;
+            padding: 9px 15px;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f8f8;
+            font-size: 14px;
+            resize: none;
+        }
+
+        .table_ {
             font-family: Arial, Helvetica, sans-serif;
             border-collapse: collapse;
             width: 100%;
         }
 
-        #table_ td,
-        #table_ th {
+        .table_ td,
+        .table_ th {
             border: 1px solid #ddd;
             padding: 8px;
         }
 
-        #table_ tr:nth-child(even) {
+        .table_ tr:nth-child(even) {
             background-color: #f2f2f2;
         }
 
-        #table_ tr:hover {
+        .table_ tr:hover {
             background-color: #ddd;
         }
 
-        #table_ th {
+        .table_ th {
             padding-top: 12px;
             padding-bottom: 12px;
             text-align: left;
@@ -49,140 +64,318 @@
         }
 
         .button {
-            background-color: #1f64cc;
+            background-color: #3b637a;
             /* Green */
             border: none;
             color: white;
-            padding: 16px 32px;
+            padding: 10px 25px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            font-size: 16px;
+            font-size: 14px;
             margin: 4px 2px;
-            transition-duration: 0.4s;
+            transition-duration: 0.3s;
             cursor: pointer;
             border-radius: 12px;
+
         }
 
         .button1:hover {
             background-color: #1da52f;
             color: white;
+
         }
 
         .button2:hover {
             background-color: #e41e1e;
             color: white;
+
+
+        }
+
+        .button3:hover {
+            background-color: #6384c2;
+            color: white;
+
+
+        }
+
+        .topnav {
+            background-color: #3284e2;
+            top: 0;
+            overflow: hidden;
+            padding: 10px;
+            width: 100%;
+            position: fixed;
+
+
+        }
+
+        .doc_button {
+            background-color: #3b637a;
+            /* Green */
+            border: none;
+            color: white;
+            padding: 6px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 8px;
+            margin: 2px 1px;
+            transition-duration: 0.3s;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .splitscreen {
+            display: table;
+
+        }
+
+        .splitscreen .left {
+            display: table-cell;
+            width: 1px;
+            white-space: nowrap;
+            border: 2px dashed rgb(238, 243, 245);
+        }
+
+        .splitscreen .right {
+
+            display: table-cell;
+            width: 100%;
+            padding: 0 0 0 5px;
+            border: 2px dashed rgb(242, 242, 248);
         }
     </style>
+    <!----<script src="{{url_for('static',filename='ckeditor/ckeditor.js')}}" async></script>--->
+
+    <script>
+        // Add column
+        function addColumn(tblId) {
+            var tblHeadObj = document.getElementById(tblId);
+            for (var h = 0; h < tblHeadObj.rows.length; h++) {
+                var newTH = document.createElement('th');
+                newTH.width = "60";
+                tblHeadObj.rows[h].appendChild(newTH);
+                newTH.innerHTML = '';
+            }
+
+            var tblBodyObj = document.getElementById(tblId).tBodies[0];
+            for (var i = 0; i < tblBodyObj.rows.length; i++) {
+                var newCell = tblBodyObj.rows[i].insertCell(-1);
+                newCell.innerHTML = "";
+            }
+        }
+        // Delete column
+        function deleteColumn(tblId) {
+            var allRows = document.getElementById(tblId).rows;
+            for (var i = 0; i < allRows.length; i++) {
+                if (allRows[i].cells.length > 1) {
+                    allRows[i].deleteCell(-1);
+                }
+            }
+        }
+    </script>
+    <script>
+        // ADD ROWS
+        function add_rows(tbl_id) {
+            var table = document.getElementById(tbl_id);
+            //var rowCount = table.rows.length;
+            var colCount = table.rows[0].cells.length;
+            var row = table.insertRow(-1);
+            for (let i = 0; i < colCount; i++) {
+                var cell = row.insertCell(i);
+                cell.height = "50";
+                cell.innerHTML = " ";
+            }
+
+
+        }
+
+
+    </script>
+    <script>
+        // DOWNLOAD TABLE AS CSV
+        function download_table_as_csv(table_id, separator = ',') {
+            // Select rows from table_id
+            var rows = document.querySelectorAll('table#' + table_id + ' tr');
+            // Construct csv
+            var csv = [];
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll('td, th');
+                for (var j = 0; j < cols.length; j++) {
+                    // Clean innertext to remove multiple spaces and jumpline (break csv)
+                    var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
+                    // Escape double-quote with double-double-quote (see https://stackoverflow.com/questions/17808511/properly-escape-a-double-quote-in-csv)
+                    data = data.replace(/"/g, '""');
+                    // Push escaped string
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(separator));
+            }
+            var csv_string = csv.join('\n');
+            // Download it
+            var filename = 'export_' + table_id + '.csv';
+            var link = document.createElement('a');
+            link.style.display = 'none';
+            link.setAttribute('target', '_blank');
+            link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+
+    <script>
+        // SETTING ID OF AN ELEMENT GLOBAL
+        var selected_id = ""
+        function set_id_global(id_) {
+            selected_id = id_
+            console.log(selected_id)
+        }
+    </script>
+
+
+    <script>
+        // CREATE TABLE
+        var num_table = 0
+        function addTable() {
+            var body = document.getElementsByTagName('body');
+            var table = document.createElement('table');
+            table.border = '1';
+            table.id = `table_${num_table}`;
+            table.className = "table_"
+
+            table.contentEditable = true;
+            window.num_table++;
+            table.setAttribute('onclick', "set_id_global(this.id)");
+            var tableBody = document.createElement('TBODY');
+            table.appendChild(tableBody);
+
+            for (var i = 0; i < 4; i++) {
+                var tr = document.createElement('TR');
+                tableBody.appendChild(tr);
+
+                for (var j = 0; j < 4; j++) {
+                    var td = document.createElement('TD');
+                    td.width = '75';
+                    td.height = "40";
+                    td.appendChild(document.createTextNode(" "));
+                    tr.appendChild(td);
+                }
+            }
+            body[0].appendChild(table);
+        }
+
+    </script>
+    <script>
+        function delete_element() {
+            document.getElementById(selected_id).outerHTML = "";
+
+        }
+    </script>
+    <!--------<script>
+        function render_html() {
+            var rendered = $('html').html();   // store this in some variable 
+            console.log(rendered)
+        };
+    </script>------>
 </head>
 
 <body>
-    <h1>Experiment Summary</h1>
+
+    <form class="topnav">
+        <input type="button" class="button button1" value="add column" onclick="addColumn(selected_id)" />
+        <input type="button" class="button button2" value="delete column" onclick="deleteColumn(selected_id)" />
+
+        <input type="button" class="button button3" value="add row" name="add_row" onclick="add_rows(selected_id)" />
+        <input type="button" class="button button3" value="add notes" name="add_text_area" onclick="inserttextarea()" />
+        <input type="button" class="button button3" value="add table" name="add_table" onclick="addTable()" />
+        <input type="button" class="button button2" value="Delete item" name="delete_elem" onclick="delete_element()" />
+        <input class="button button1" type="submit" value="Save page" onclick="SaveToDisk()">
+
+    </form>
+
+    <h1 class="heading">Experiment Summary</h1>
+    {% if show_metrics_graph %}
     <div id='chart' class='chart'></div>
+    {% endif %}
+
+    {% if plots_exist %}
+    {% for i in img_list %}
+    <div class="splitscreen">
+        <div class="left">
+            <img src="{{i[0]}}" id={{i.2}} onclick="set_id_global(this.id)">
+        </div>
+        <div class="right">
+            <p>Notes</p>
+            <textarea class="text_img" id={{i.2}} onclick="set_id_global(this.id)">{{i.1}}</textarea>
+        </div>
+
+
+    </div>
+    <br>
+    {% endfor %}
+    {% endif %}
     <h2>User notes</h2>
     <form method="post">
 
-        <input type="button" class="button button1" value="add column" onclick="addColumn('table_')" />
-        <input type="button" class="button button2" value="delete column" onclick="deleteColumn('table_')" />
-        <p>
-            <input type="button" class="button button1" value="add row" name="add_row" onclick="add_rows()" />
-        </p>
-        <p>
-            <input type="button" class="button button1" value="Save table" name="save_table"
-                onclick="download_table_as_csv('table_')" />
-        </p>
         {% if table_path=="none" %}
-        <p>User info unavailable</p>
+        <p> </p>
 
         {% else %}
         {% include table_path %}
         {% endif %}
+
     </form>
     <br>
     <br>
+
     <h2>Team notes</h2>
     <form action="#" method="post">
-        <textarea name="text">{{user_notes}}</textarea>
+        <textarea class="text_area" id="team_text" name="text_area"
+            onclick="set_id_global(this.id)">{{user_notes}}</textarea>
         <input class="button button1" type="submit" value="Save changes">
     </form>
 
+
+
+
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <script type='text/javascript'>
+        var graphs = {{ graphJSON | safe}};
+        Plotly.plot('chart', graphs, {});
+    </script>
+
+    <script>
+        // INSERTING TEXT AREA ON CLICK.
+        var num_text = 0
+        function inserttextarea() {
+            var text = document.createElement('textarea');
+            text.className = 'text_area';
+            text.id = `text_id_${num_text}`
+            text.setAttribute('onclick', "set_id_global(this.id)");
+            document.getElementsByTagName('body')[0].appendChild(text);
+            window.num_text++;
+            console.log(num_text);
+        }
+    </script>
+    <script>
+        function SaveToDisk() {
+            var pageSource = document.body.parentNode.innerHTML;
+            var downloadLink = document.createElement('a');
+            downloadLink.href = "data:text/html," + unescape(encodeURI(escape(pageSource)));
+            downloadLink.target = '_blank';
+            downloadLink.download = 'edited_page.html';
+            downloadLink.click();
+
+        }
+
+    </script>
+
 </body>
-<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-<script type='text/javascript'>
-    var graphs = {{ graphJSON | safe}};
-    Plotly.plot('chart', graphs, {});
-</script>
-<script>
-    function addColumn(tblId) {
-        var tblHeadObj = document.getElementById(tblId).tHead;
-        for (var h = 0; h < tblHeadObj.rows.length; h++) {
-            var newTH = document.createElement('th');
-            tblHeadObj.rows[h].appendChild(newTH);
-            newTH.innerHTML = '';
-        }
-
-        var tblBodyObj = document.getElementById(tblId).tBodies[0];
-        for (var i = 0; i < tblBodyObj.rows.length; i++) {
-            var newCell = tblBodyObj.rows[i].insertCell(-1);
-            newCell.innerHTML = '';
-        }
-    }
-    function deleteColumn(tblId) {
-        var allRows = document.getElementById(tblId).rows;
-        for (var i = 0; i < allRows.length; i++) {
-            if (allRows[i].cells.length > 1) {
-                allRows[i].deleteCell(-1);
-            }
-        }
-    }
-</script>
-
-<script>
-    function download_table_as_csv(table_id, separator = ',') {
-        // Select rows from table_id
-        var rows = document.querySelectorAll('table#' + table_id + ' tr');
-        // Construct csv
-        var csv = [];
-        for (var i = 0; i < rows.length; i++) {
-            var row = [], cols = rows[i].querySelectorAll('td, th');
-            for (var j = 0; j < cols.length; j++) {
-                // Clean innertext to remove multiple spaces and jumpline (break csv)
-                var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
-                // Escape double-quote with double-double-quote (see https://stackoverflow.com/questions/17808511/properly-escape-a-double-quote-in-csv)
-                data = data.replace(/"/g, '""');
-                // Push escaped string
-                row.push('"' + data + '"');
-            }
-            csv.push(row.join(separator));
-        }
-        var csv_string = csv.join('\n');
-        // Download it
-        var filename = 'export_' + table_id + '.csv';
-        var link = document.createElement('a');
-        link.style.display = 'none';
-        link.setAttribute('target', '_blank');
-        link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-</script>
-<script>
-    function add_rows() {
-        var table = document.getElementById('table_');
-        //var rowCount = table.rows.length;
-        var colCount = table.rows[0].cells.length;
-        var row = table.insertRow(-1);
-        for (let i = 0; i < colCount; i++) {
-            var cell = row.insertCell(i);
-            cell.innerHTML = "NEW ROW";
-        }
 
 
-    }
-
-
-</script>
 
 </html>

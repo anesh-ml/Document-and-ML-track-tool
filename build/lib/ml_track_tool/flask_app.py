@@ -21,22 +21,14 @@ import shutil
 import pathlib
 import glob
 import re
-from summary_plots import plot_summary
-#from ml_track_tool.flask_app import create_application
-
-
-
 
 pd.set_option('colheader_justify', 'center')
 
 
 
-
 def create_application(path):
     app=Flask(__name__)
-    
     path=path.replace("\\","/")
-    path="/".join(path.split("/")[:-1])
     current_path=pathlib.Path(__file__).parent.resolve()
     my_loader = jinja2.ChoiceLoader([
         app.jinja_loader,
@@ -47,37 +39,12 @@ def create_application(path):
     @app.route('/',methods=["POST","GET"])
     def home():   
         if request.method=='POST':
-            if request.form['submit_btn']=="Show experiment":
-                experiment_folder=request.form['experiment']
-                files=glob.glob(f"{path}/{experiment_folder}/plots/*")
-                if files:
-                    for file in files:
-                        shutil.copy(file,f"{current_path}/static/")  
-                try:
-                    shutil.copy(f"{path}/{experiment_folder}/notes/table_{experiment_folder}.html",f"{current_path}/templates/")
-
-                except Exception as e:
-                    pass
-                return redirect(url_for("home2",experiment=experiment_folder))
-            elif request.form['submit_btn']=="Show Summary":
-                fig=plot_summary(path)
-                print(len(fig))
-                graphJSON=[]
-                if(len(fig)==2):
-                    graphJSON1 = json.dumps(fig[0], cls=plotly.utils.PlotlyJSONEncoder)
-                    graphJSON.append(graphJSON1)
-                    graphJSON2 = json.dumps(fig[1], cls=plotly.utils.PlotlyJSONEncoder)
-                    graphJSON.append(graphJSON2)
-                    num_graph=2
-                    return render_template('summary.html', graphJSON=graphJSON,num_graph=num_graph)
-
-                elif(len(fig)==1):
-                    graphJSON1 = json.dumps(fig[0], cls=plotly.utils.PlotlyJSONEncoder)
-                    graphJSON.append(graphJSON1)
-                    num_graph=1
-                    return render_template('summary.html', graphJSON=graphJSON,num_graph=num_graph)
-                else:
-                    return "<h1> No Info available</h1>"
+            experiment_folder=request.form['experiment']
+            try:
+                shutil.copy(f"{path}/{experiment_folder}/notes/table_{experiment_folder}.html",f"{current_path}/templates/")
+            except Exception as e:
+                pass
+            return redirect(url_for("home2",experiment=experiment_folder))
         
         else:
             folders=os.listdir(path)
@@ -88,8 +55,7 @@ def create_application(path):
     def home2(experiment):
         if request.method=='POST':
         
-            notes=request.form['text_area']
-            print(request)
+            notes=request.form['text']
             text_file = open(f"{path}/team_notes/notes.txt", "w")
             text_file.write(notes)
             text_file.close()
@@ -97,10 +63,15 @@ def create_application(path):
             get the latest downloaded table in the "download" folder
             and write it as html to experiment notes folder
             '''
-            download_path=f"{Path.home()}/Downloads/*.html".replace("\\","/")
+            download_path=f"{Path.home()}/Downloads/*.csv".replace("\\","/")
             latest_file=get_latest_file(download_path)
             if latest_file:
-                shutil.copy(latest_file,"./templates/edited_templates/")
+                df=pd.read_csv(latest_file).iloc[:,1:]
+                df=df.replace(np.nan,"")
+                html=df.to_html()
+                html=html.replace('<table border="1" class="dataframe">','<table border="1" width="100%" contenteditable=true  class="dataframe" id="table_">')
+                with open(f"{path}/{experiment}/notes/table_{experiment}.html", 'w') as f:
+                    f.write(html)
                 os.remove(latest_file)
             return redirect(url_for("home2",experiment=experiment))
         else:
@@ -113,16 +84,13 @@ def create_application(path):
             memory_path=f"{path+'/'+exp_folder}/memory_info/memory_metrics.json"
             history_path=f"{path+'/'+exp_folder}/performance/performance.json"
             prediction_path=f"{path+'/'+exp_folder}/prediction/prediction.json"
-            plots_path=f"{path+'/'+exp_folder}/plots/"
-            plot_files=glob.glob(f"{plots_path}/*")
+
             memory_file_path_exists=False
             history_file_path_exists=False
             prediction_file_path_exists=False
-            plots_exists=False
             memory_dict={}
             history_dict={}
             pred_dict={}
-            plot_lists=[]
             if os.path.exists(memory_path):
                 memory_file = open(memory_path, "r")
                 memory_dict=json.load(memory_file)
@@ -132,6 +100,7 @@ def create_application(path):
                 history_dict=json.load(history_file)
                 history_file_path_exists=True
             if os.path.exists(prediction_path):
+                
                 pred_file = open(prediction_path, "r")
                 pred_dict=json.load(pred_file)
                 prediction_file_path_exists=True
@@ -140,37 +109,18 @@ def create_application(path):
                 text_file = open(f"{path}/team_notes/notes.txt", "w")
                 text_file.write("")
                 text_file.close()
-            if plot_files:
-                plots_exists=True
-                plot_files=sorted(plot_files,key=os.path.getctime)
-                plot_files=list(map(lambda x:x.replace("\\","/"),plot_files))
-                plots_file_name=list(map(lambda x:x.split("/")[-1],plot_files))
-                plot_lists=[]
-                for file in plots_file_name:
-                    file_id=file.split(".")[0]
-                    if (f"{file_id}.txt" in plots_file_name):
-                        with open(f"{plots_path}/{file_id}.txt", "r+") as file1:
-                            notes_str=file1.read()
-                    else:
-                            notes_str=""
-                    if not file.endswith(".txt"):
-                            img_file="/static/"+file
-                    else:
-                        continue
-                    plot_lists.append((img_file,notes_str,file_id))
             notes_path=f"{path}/team_notes/notes.txt"
             with open(notes_path) as f:
                 contents = f.read()
-            if ((memory_file_path_exists)or(history_file_path_exists)or(prediction_file_path_exists)):
+            if((memory_file_path_exists)or(history_file_path_exists)or(prediction_file_path_exists)):
                 fig=plots(memory_dict,history_dict,pred_dict,memory_file_path_exists,history_file_path_exists,prediction_file_path_exists)
                 graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-                show_metrics_graph=True
             else:
                 fig = make_subplots(rows=1, cols=1)
+                fig.update_layout(autosize=False,width=10,height=10)
                 graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-                show_metrics_graph=False
                 
-            return render_template('visualization.html', graphJSON=graphJSON,user_notes=contents,table_path=table_path,show_metrics_graph=show_metrics_graph,img_list=plot_lists,plots_exist=plots_exists)
+            return render_template('visualization.html', graphJSON=graphJSON,user_notes=contents,table_path=table_path)
     def plot_helper(fig,text,row,col):
             fig.add_trace(go.Scatter(
             x=[0],
@@ -183,9 +133,20 @@ def create_application(path):
                 size=20,
                 color="crimson"
             ),
-        ),row=row,col=col)
+        ),row=row[0],col=col[0])
+            fig.add_trace(go.Scatter(
+            x=[0],
+            y=[0],
+            mode="lines+markers+text",showlegend=False,
+            text=[text],
+            textposition="bottom center",
+            textfont=dict(
+                family="sans serif",
+                size=20,
+                color="crimson"
+            ),
+        ),row=row[1], col=col[1])
     def plot_confusion_matrix(fig,y_true,y_pred,x,y,row,col,labels):
-        
         confusion_matrix_=confusion_matrix(y_true,y_pred)
         trace1 = ff.create_annotated_heatmap(z = confusion_matrix_,
                                  x = labels,
@@ -205,8 +166,7 @@ def create_application(path):
                 go.Scatter(y=memory_dict['gpu'],name="GPU"),
                 row=1, col=2)
         else:
-            plot_helper(fig,"Memory info unavailable",1,1)
-            plot_helper(fig,"Memory info unavailable",1,2)
+            plot_helper(fig,"Memory info unavailable",[1,1],[1,2])
             
         if(history_file_path_exists):
             keys=list(history_dict.keys())
@@ -224,8 +184,7 @@ def create_application(path):
                 go.Scatter(x=x3,y=history_dict[keys[3]],name=keys[3]),
                 row=2, col=2)
         else:
-            plot_helper(fig,"Performance metrics info unavailable",2,1)
-            plot_helper(fig,"Performance metrics info unavailable",2,2)
+            plot_helper(fig,"Performance metrics info unavailable",[2,2],[1,2])        
         
         if prediction_file_path_exists:
             
@@ -247,7 +206,7 @@ def create_application(path):
                     fig.add_trace(go.Scatter(x=[0,1], y=[0,1], line = dict(color='royalblue', dash='dash'),showlegend=False),row=3,col=1)
                     fig.add_trace(go.Scatter(x=recall, y=precision, fill='tozeroy',name=f"Precision-Recall Curve:{i}"),row=3,col=2)
                     fig.add_trace(go.Scatter(x=[1,0], y=[0,1], line = dict(color='royalblue', dash='dash'),showlegend=False),row=3,col=2)
-                y_true=np.argmax(y_true_val,axis=1)
+                
                 plot_confusion_matrix(fig,y_true,y_pred,[0,1],[0,1],4,1,labels_id)
             else:
                 y_pred=np.round(y_pred_proba)
@@ -262,25 +221,27 @@ def create_application(path):
                 plot_confusion_matrix(fig,y_true,y_pred,[0,1],[0,1],4,1,labels_id)
         
         else:
-            plot_helper(fig,"Prediction info unavailable",3,1)
-            plot_helper(fig,"Prediction info unavailable",3,2)
-            plot_helper(fig,"Prediction info unavailable",4,1)
+            plot_helper(fig,"Prediction info unavailable",[3,3],[1,2])
            
-        titles=[('Seconds','GPU Consumption (MB)'),('epochs','Loss'),('epochs','Accuracy'),('False Positive Rate','True Positive Rate'),('Recall','Precision')]
-        i=2
-        for title in titles:
-            fig['layout'][f'xaxis{i}']['title']=title[0]
-            fig['layout'][f'yaxis{i}']['title']=title[1]
-            i+=1
+        
         fig['layout']['xaxis']['title']='Seconds'
         fig['layout']['yaxis']['title']='RAM Consumption (MB)'
+        fig['layout']['xaxis2']['title']='Seconds'
+        fig['layout']['yaxis2']['title']='GPU Consumption (MB)'
+        fig['layout']['xaxis3']['title']='epochs'
+        fig['layout']['yaxis3']['title']='Loss'
+        fig['layout']['xaxis4']['title']='epochs'
+        fig['layout']['yaxis4']['title']='Accuracy'
+        fig['layout']['xaxis5']['title']='False Positive Rate'
+        fig['layout']['yaxis5']['title']='True Positive Rate'
+        fig['layout']['xaxis6']['title']='Recall'
+        fig['layout']['yaxis6']['title']='Precision'
         fig.update_layout(autosize=False,width=1300,height=1500)
         return fig
     
     def get_latest_file(download_path):
-        pattern=r'edited_page\(?'
+        pattern=r'export_table_\(?'
         list_of_files = glob.glob(download_path)
-        print(list_of_files)
         csv_files=list(map(lambda x:x.split("\\")[1],list_of_files))
         matched_files=list(filter(re.compile(pattern).match, csv_files))
         list_of_files=list(map(lambda x:f"{Path.home()}/Downloads/"+x,list(matched_files)))
@@ -289,3 +250,7 @@ def create_application(path):
 
 
     app.run()
+
+
+
+

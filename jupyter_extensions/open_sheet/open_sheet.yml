@@ -1,9 +1,0 @@
-Type: Jupyter Notebook Extension
-Compatibility: 3.x, 4.x, 5.x
-Name: Open a sheet
-Main: main.js
-Link: README.md
-Description: |
-  Open a sheet from existing dataframe, file or a new sheet
-Parameters:
-  - none

@@ -1,9 +1,0 @@
-Type: Jupyter Notebook Extension
-Compatibility: 3.x, 4.x, 5.x
-Name: Interpret
-Main: main.js
-Link: README.md
-Description: |
-  Interpet the model's output
-Parameters:
-  - none

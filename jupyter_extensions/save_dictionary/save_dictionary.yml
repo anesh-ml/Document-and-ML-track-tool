@@ -1,9 +1,0 @@
-Type: Jupyter Notebook Extension
-Compatibility: 3.x, 4.x, 5.x
-Name: Save dictionary
-Main: main.js
-Link: README.md
-Description: |
-  Save dictionary
-Parameters:
-  - none
