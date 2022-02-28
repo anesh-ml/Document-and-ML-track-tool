@@ -2,8 +2,15 @@
 <html>
 
 <head>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- include libraries(jQuery, bootstrap) -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <!-- include summernote css/js -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
 
     <style>
         table {
@@ -127,6 +134,7 @@
             border-radius: 12px;
         }
 
+
         .splitscreen {
             display: table;
 
@@ -137,6 +145,7 @@
             width: 1px;
             white-space: nowrap;
             border: 2px dashed rgb(238, 243, 245);
+
         }
 
         .splitscreen .right {
@@ -145,85 +154,296 @@
             width: 100%;
             padding: 0 0 0 5px;
             border: 2px dashed rgb(242, 242, 248);
+
+        }
+
+        .note_div {
+
+            max-width: 100%;
+
+
+            border: 2px dashed rgb(198, 198, 235);
+
+        }
+
+        .save_note_btn {
+            background-color: #3b637a;
+            /* Green */
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            margin: 2px 2px;
+            transition-duration: 0.3s;
+            cursor: pointer;
+            border-radius: 8px;
+
+        }
+
+        h2 {
+            text-align: center
+        }
+
+        h4 {
+            text-align: center
+        }
+
+        #team_notes {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #0070FF;
+            line-height: 2;
+            text-align: center;
+            color: #050607;
+            font-size: 30px;
+            font-family: sans-serif;
+
+            text-shadow: 0 1px 0 #84BAFF;
+            box-shadow: 0 0 15px #00214B
         }
     </style>
     <!----<script src="{{url_for('static',filename='ckeditor/ckeditor.js')}}" async></script>--->
 
-    <script>
-        // Add column
-        function addColumn(tblId) {
-            var tblHeadObj = document.getElementById(tblId);
-            for (var h = 0; h < tblHeadObj.rows.length; h++) {
-                var newTH = document.createElement('th');
-                newTH.width = "60";
-                tblHeadObj.rows[h].appendChild(newTH);
-                newTH.innerHTML = '';
-            }
 
-            var tblBodyObj = document.getElementById(tblId).tBodies[0];
-            for (var i = 0; i < tblBodyObj.rows.length; i++) {
-                var newCell = tblBodyObj.rows[i].insertCell(-1);
-                newCell.innerHTML = "";
-            }
+</head>
+
+<body>
+
+    <br>
+    <br>
+    <br>
+
+    <h1 class="heading"><strong>{{page_title}}</strong></h1>
+    {% if show_metrics_graph %}
+    <div id='chart' class='chart'></div>
+    {% endif %}
+    {% if plots_exist %}
+    {% for i in img_list %}
+    {% if i.5=='image' %}
+
+    <div class="note_div" id={{i.2}} onclick="set_id_global(this.id)">
+        <h2 id="{{i.2}}_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 5px;">{{i.6}}</h2>
+        <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
+        {% if i[3]>1200 %}
+
+        <img src="{{i[0]}}" width="900" id='{{i.2}}_img' onclick="set_id_global(this.id)">
+
+
+        {% else %}
+
+        <img src="{{i[0]}}" id='{{i.2}}_img' onclick="set_id_global(this.id)">
+
+
+        {% endif %}
+
+        <br>
+
+        <h3><strong>Notes</strong></h3>
+
+        <div id="{{i.2}}_docu">{{i.1|safe}}</div>
+        <br>
+        <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
+
+    </div>
+
+    {% else %}
+
+    <div class="note_div" id={{i.2}} onclick="set_id_global(this.id)">
+        <h2 id="{{i.2}}_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 5px;">{{i.6}}</h2>
+        <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
+        <div id='chart_{{i.2}}' class='chart' onclick="set_id_global(this.id)"></div>
+
+        <script type='text/javascript'>
+            "use strict";
+            var graph = {{ i[0]| safe }};
+            plot_plotly(graph, 'chart_{{i.2}}')
+        </script>
+        <h3><strong>Notes</strong></h3>
+
+        <div id="{{i.2}}_docu">{{i.1|safe}}</div>
+        <br>
+        <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
+    </div>
+
+    {% endif %}
+    <br>
+    {% endfor %}
+    {% endif %}
+
+
+    <form method="post">
+
+        {% if table_path=="none" %}
+        <p> </p>
+
+        {% else %}
+        <h2><strong>User notes</strong></h2>
+        <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
+        {% include table_path %}
+        {% endif %}
+
+    </form>
+
+    <br>
+    <br>
+    <h2><strong>Document</strong></h2>
+    <br>
+    <br>
+    <div id="doc_notes" onclick="set_id_global(this.id)" class="note_div" style="padding: 10px;">
+        <h2 id="doc_notes_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 5px;">{{doc_title}}
+        </h2>
+        <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
+        <div id="doc_notes_docu">
+            {{doc|safe}}
+        </div>
+        <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
+    </div>
+    <br>
+    <br>
+    <br>
+
+    <div id="team_notes">
+        <h2><strong>Team notes</strong></h2>
+        <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
+
+        <form action="#" method="post" id="saveChanges">
+            <textarea class="text_area" id="team_text" name="text_area_txt"
+                onclick="set_id_global(this.id)">{{user_notes}}</textarea>
+
+        </form>
+    </div>
+    <div class="topnav">
+        <button id="edit" class="button button1" onclick="edit_test()" type="button">Create/Edit Document</button>
+        <button id="save" class="button button1" onclick="save_test()" type="button">Render</button>
+
+        <input class="button button1" type="submit" value="Apply changes" name="save_changes" form="saveChanges">
+        <input class="button button1" type="submit" value="Download page" name="download_page"
+            onclick="download_page()">
+        <input class="button button1" type="submit" value="Hide/show team notes" onclick="hide_notes()">
+        <input class="button button1" type="submit" value="Add document" onclick="add_doc()">
+    </div>
+
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <script type='text/javascript'>
+        var graphs = {{ graphJSON | safe}};
+
+        Plotly.plot('chart', graphs, {});
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('#summernote').summernote();
+        });
+    </script>
+    <script>
+        "use strict";
+
+        var edit_test = function () {
+            $("#" + selected_id + "_docu").summernote({ focus: true });
+        };
+
+        var save_test = function () {
+            var markup = $("#" + selected_id + "_docu").summernote('code');
+            $("#" + selected_id + "_docu").summernote('destroy');
+        };
+    </script>
+
+
+    <script>
+        function download() {
+
+            var element = document.createElement('a');
+            text = document.getElementById(selected_id + "_docu").innerHTML;
+            title = document.getElementById(selected_id + "_title").innerHTML;
+            var dict = { "content": text, "title": title }
+            dict = JSON.stringify(dict)
+            filename = selected_id + "_docu" + ".json"
+            element.setAttribute('href', 'data:text/json;charset=utf-8,' +
+                encodeURIComponent(dict));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
         }
-        // Delete column
-        function deleteColumn(tblId) {
-            var allRows = document.getElementById(tblId).rows;
-            for (var i = 0; i < allRows.length; i++) {
-                if (allRows[i].cells.length > 1) {
-                    allRows[i].deleteCell(-1);
-                }
+
+    </script>
+    <script>
+        function download_page() {
+            document.getElementsByClassName("topnav")[0].style.visibility = "hidden";
+            var save_btn = document.getElementsByClassName("save_note_btn")
+
+            for (var i = 0; i < save_btn.length; i++) {
+                console.log(i)
+                document.getElementsByClassName("save_note_btn")[i].style.visibility = "hidden"
             }
+            var pageSource = document.body.parentNode.innerHTML;
+            var downloadLink = document.createElement('a');
+            downloadLink.href = "data:text/html," + unescape(encodeURI(escape(pageSource)));
+            downloadLink.target = '_blank';
+            downloadLink.download = 'document.html';
+            downloadLink.click();
+            window.location.reload();
         }
     </script>
     <script>
-        // ADD ROWS
-        function add_rows(tbl_id) {
-            var table = document.getElementById(tbl_id);
-            //var rowCount = table.rows.length;
-            var colCount = table.rows[0].cells.length;
-            var row = table.insertRow(-1);
-            for (let i = 0; i < colCount; i++) {
-                var cell = row.insertCell(i);
-                cell.height = "50";
-                cell.innerHTML = " ";
+        var hide_count = 0
+        function hide_notes() {
+            window.hide_count += 1
+            if (hide_count % 2) {
+                document.getElementById("team_notes").style.visibility = "visible";
             }
-
+            else {
+                document.getElementById("team_notes").style.visibility = "hidden";
+            }
 
         }
-
-
     </script>
     <script>
-        // DOWNLOAD TABLE AS CSV
-        function download_table_as_csv(table_id, separator = ',') {
-            // Select rows from table_id
-            var rows = document.querySelectorAll('table#' + table_id + ' tr');
-            // Construct csv
-            var csv = [];
-            for (var i = 0; i < rows.length; i++) {
-                var row = [], cols = rows[i].querySelectorAll('td, th');
-                for (var j = 0; j < cols.length; j++) {
-                    // Clean innertext to remove multiple spaces and jumpline (break csv)
-                    var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
-                    // Escape double-quote with double-double-quote (see https://stackoverflow.com/questions/17808511/properly-escape-a-double-quote-in-csv)
-                    data = data.replace(/"/g, '""');
-                    // Push escaped string
-                    row.push('"' + data + '"');
-                }
-                csv.push(row.join(separator));
-            }
-            var csv_string = csv.join('\n');
-            // Download it
-            var filename = 'export_' + table_id + '.csv';
-            var link = document.createElement('a');
-            link.style.display = 'none';
-            link.setAttribute('target', '_blank');
-            link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        window.onload = function () {
+            document.getElementById("team_notes").style.visibility = "hidden";
+        };
+    </script>
+    <script>
+        var num_doc = 0
+        function add_doc() {
+            var main_div = document.createElement("div")
+            var div_ele = document.createElement("div")
+            var save_btn = document.createElement("input")
+            var hr = document.createElement("hr")
+            var h2 = document.createElement('h2')
+            var br = document.createElement('br')
+            h2.innerHTML = "Title"
+            h2.id = `doc_${num_doc}_title`
+            h2.contentEditable = true
+            hr.width = "40%"
+            save_btn.id = `docbtn_${num_doc}`
+            save_btn.className = "save_note_btn button1"
+            save_btn.value = "Save changes"
+            save_btn.type = "button"
+            save_btn.setAttribute("onclick", "download()")
+            main_div.className = 'note_div'
+            main_div.id = `doc_${num_doc}`
+            div_ele.id = `doc_${num_doc}_docu`
+            main_div.setAttribute("onclick", "set_id_global(this.id)")
+            main_div.appendChild(h2)
+            main_div.appendChild(hr)
+            main_div.appendChild(div_ele)
+            main_div.appendChild(save_btn)
+            document.body.appendChild(main_div)
+            document.body.appendChild(br)
+            document.body.appendChild(br)
+            console.log(num_doc)
+            console.log(div_ele.id)
+            window.num_doc += 1
         }
     </script>
 
@@ -236,146 +456,21 @@
         }
     </script>
 
-
-    <script>
-        // CREATE TABLE
-        var num_table = 0
-        function addTable() {
-            var body = document.getElementsByTagName('body');
-            var table = document.createElement('table');
-            table.border = '1';
-            table.id = `table_${num_table}`;
-            table.className = "table_"
-
-            table.contentEditable = true;
-            window.num_table++;
-            table.setAttribute('onclick', "set_id_global(this.id)");
-            var tableBody = document.createElement('TBODY');
-            table.appendChild(tableBody);
-
-            for (var i = 0; i < 4; i++) {
-                var tr = document.createElement('TR');
-                tableBody.appendChild(tr);
-
-                for (var j = 0; j < 4; j++) {
-                    var td = document.createElement('TD');
-                    td.width = '75';
-                    td.height = "40";
-                    td.appendChild(document.createTextNode(" "));
-                    tr.appendChild(td);
-                }
-            }
-            body[0].appendChild(table);
-        }
-
-    </script>
     <script>
         function delete_element() {
             document.getElementById(selected_id).outerHTML = "";
 
         }
     </script>
-    <!--------<script>
-        function render_html() {
-            var rendered = $('html').html();   // store this in some variable 
-            console.log(rendered)
-        };
-    </script>------>
-</head>
-
-<body>
-
-    <form class="topnav">
-        <input type="button" class="button button1" value="add column" onclick="addColumn(selected_id)" />
-        <input type="button" class="button button2" value="delete column" onclick="deleteColumn(selected_id)" />
-
-        <input type="button" class="button button3" value="add row" name="add_row" onclick="add_rows(selected_id)" />
-        <input type="button" class="button button3" value="add notes" name="add_text_area" onclick="inserttextarea()" />
-        <input type="button" class="button button3" value="add table" name="add_table" onclick="addTable()" />
-        <input type="button" class="button button2" value="Delete item" name="delete_elem" onclick="delete_element()" />
-        <input class="button button1" type="submit" value="Save page" onclick="SaveToDisk()">
-
-    </form>
-
-    <h1 class="heading">Experiment Summary</h1>
-    {% if show_metrics_graph %}
-    <div id='chart' class='chart'></div>
-    {% endif %}
-
-    {% if plots_exist %}
-    {% for i in img_list %}
-    <div class="splitscreen">
-        <div class="left">
-            <img src="{{i[0]}}" id={{i.2}} onclick="set_id_global(this.id)">
-        </div>
-        <div class="right">
-            <p>Notes</p>
-            <textarea class="text_img" id={{i.2}} onclick="set_id_global(this.id)">{{i.1}}</textarea>
-        </div>
-
-
-    </div>
-    <br>
-    {% endfor %}
-    {% endif %}
-    <h2>User notes</h2>
-    <form method="post">
-
-        {% if table_path=="none" %}
-        <p> </p>
-
-        {% else %}
-        {% include table_path %}
-        {% endif %}
-
-    </form>
-    <br>
-    <br>
-
-    <h2>Team notes</h2>
-    <form action="#" method="post">
-        <textarea class="text_area" id="team_text" name="text_area"
-            onclick="set_id_global(this.id)">{{user_notes}}</textarea>
-        <input class="button button1" type="submit" value="Save changes">
-    </form>
-
-
-
-
     <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
     <script type='text/javascript'>
-        var graphs = {{ graphJSON | safe}};
-        Plotly.plot('chart', graphs, {});
-    </script>
-
-    <script>
-        // INSERTING TEXT AREA ON CLICK.
-        var num_text = 0
-        function inserttextarea() {
-            var text = document.createElement('textarea');
-            text.className = 'text_area';
-            text.id = `text_id_${num_text}`
-            text.setAttribute('onclick', "set_id_global(this.id)");
-            document.getElementsByTagName('body')[0].appendChild(text);
-            window.num_text++;
-            console.log(num_text);
+        "use strict";
+        function plot_plotly(graph, chart_id) {
+            var graphs2 = graph;
+            Plotly.plot(chart_id, graphs2, {});
         }
     </script>
-    <script>
-        function SaveToDisk() {
-            var pageSource = document.body.parentNode.innerHTML;
-            var downloadLink = document.createElement('a');
-            downloadLink.href = "data:text/html," + unescape(encodeURI(escape(pageSource)));
-            downloadLink.target = '_blank';
-            downloadLink.download = 'edited_page.html';
-            downloadLink.click();
-
-        }
-
-    </script>
-
 </body>
-
-
 
 </html>

@@ -1,9 +1,0 @@
-ipysheet
-scikit-plot
-lime
-Shapely
-plotly
-flask
-jinja2
-psutil
-xlwt

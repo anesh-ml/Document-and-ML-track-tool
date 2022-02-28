@@ -9,43 +9,11 @@ import os
 from threading import Thread , Timer
 import sched, time
 import json
+from ipysheet import from_dataframe
+import ipysheet
+from timeit import default_timer as timer
 
-class Variable_data(object):
-    instance = None
 
-    def __init__(self, ipython):
-        """Public constructor."""
-        if Variable_data.instance is not None:
-            raise Exception("""Only one instance of the Variable Inspector can exist at a 
-                time.  Call close() on the active instance before creating a new instance.
-                If you have lost the handle to the active instance, you can re-obtain it
-                via `VariableInspectorWindow.instance`.""")
-        
-        Variable_data.instance = self
-        self.closed = False
-        self.namespace = NamespaceMagics()
-        ipython.user_ns_hidden['widgets'] = widgets
-        ipython.user_ns_hidden['NamespaceMagics'] = NamespaceMagics
-        self.namespace.shell = ipython.kernel.shell
-
-    def close(self):
-        """Close and remove hooks."""
-        if not self.closed:
-            #self._ipython.events.unregister('post_run_cell', self.get_value)
-            #self._box.close()
-            self.closed = True
-            Variable_data.instance = None
-
-    def get_value(self):
-        
-        values = self.namespace.who_ls()
-        return values
-    
-    def save_data(self,data,file_name):
-        if not os.path.exists('experiment'):
-            os.makedirs('experiment')
-        data.to_csv(f"experiment/{file_name}.csv",index=False)
-        
 
 class Monitor(Thread):
     def __init__(self,delay,path):
@@ -56,6 +24,7 @@ class Monitor(Thread):
         self.memory={'gpu':[],'ram':[]}
         self.base_ram=self.get_ram_usage()
         self.base_gpu=self.get_gpu_memory()
+        self.start_time=timer()
         self.start()
     
     def run(self):
@@ -95,15 +64,18 @@ class Monitor(Thread):
         return memory_use_values[0]
     
     def stop(self):
+        total_time=timer()-self.start_time
+        self.stopped=True
         total_ram_consumption=max(self.memory['ram'])-min(self.memory['ram'])
         total_gpu_consumption=max(self.memory['gpu'])-min(self.memory['gpu'])
         self.memory['max_gpu_consumption']=total_gpu_consumption
         self.memory['max_ram_consumption']=total_ram_consumption
+        self.memory['execution_time']=total_time
         if not os.path.exists(f"{self.path}/memory_info/"):
             os.makedirs(f"{self.path}/memory_info/")
         a_file = open(f"{self.path}/memory_info/memory_metrics.json", "w")
         a_file = json.dump(self.memory, a_file)
-        self.stopped=True
+        
         
 def copy(src,dst):
     path="/".join(dst.split("/")[:-1])
@@ -129,3 +101,19 @@ def save_dict(dict_,file_type,file_path):
         a_file = json.dump(dict_, a_file)
     else:
         print("file type not one of [performance,prediction,none]")
+
+def add2doc(EXP_PATH,input_):
+    input_type=type(input_).__module__+" "+type(input_).__name__
+    if input_type=='ipysheet.sheet Sheet':
+        df=ipysheet.to_dataframe(input_)
+        html=df.to_html()
+        html=html.replace('<table border="1" class="dataframe">','<table border="1" width="100%" contenteditable=true')
+        with open(f"{EXP_PATH}/document/doc_notes_docu.txt", 'a') as file:
+            file.write(f"\n{html}")
+    else:
+        if not os.path.exists(f"{EXP_PATH}/document/"):
+            os.mkdir(f"{EXP_PATH}/document/")    
+            with open(f"{EXP_PATH}/document/doc_notes_docu.txt", "w") as file1:
+                file1.write("")
+        with open(f"{EXP_PATH}/document/doc_notes_docu.txt", 'a') as file:
+            file.write(input_+"\n")

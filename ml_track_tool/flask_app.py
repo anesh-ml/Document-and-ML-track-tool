@@ -22,60 +22,47 @@ import pathlib
 import glob
 import re
 from summary_plots import plot_summary
+import imagesize
+
 #from ml_track_tool.flask_app import create_application
 
 
+# In[2]:
 
 
 pd.set_option('colheader_justify', 'center')
 
 
+# In[3]:
 
 
 def create_application(path):
-    app=Flask(__name__)
+    app=Flask(__name__,static_folder=f"{path}/plots")
     
     path=path.replace("\\","/")
     path="/".join(path.split("/")[:-1])
-    current_path=pathlib.Path(__file__).parent.resolve()
+    #current_path=pathlib.Path(__file__).parent.resolve()
+    current_path="./"
     my_loader = jinja2.ChoiceLoader([
         app.jinja_loader,
         jinja2.FileSystemLoader(['/flaskapp/userdata',
-                                 f"{current_path}/templates"]),
+                                 "./templates"]),
     ])
     app.jinja_loader = my_loader
     @app.route('/',methods=["POST","GET"])
     def home():   
         if request.method=='POST':
             if request.form['submit_btn']=="Show experiment":
-                experiment_folder=request.form['experiment']
-                files=glob.glob(f"{path}/{experiment_folder}/plots/*")
-                if files:
-                    for file in files:
-                        shutil.copy(file,f"{current_path}/static/")  
-                try:
-                    shutil.copy(f"{path}/{experiment_folder}/notes/table_{experiment_folder}.html",f"{current_path}/templates/")
-
-                except Exception as e:
-                    pass
-                return redirect(url_for("home2",experiment=experiment_folder))
+                experiment_folder=request.form['experiment'] 
+                return redirect(url_for("experiment_page",experiment=experiment_folder))
             elif request.form['submit_btn']=="Show Summary":
-                fig=plot_summary(path)
-                print(len(fig))
-                graphJSON=[]
-                if(len(fig)==2):
-                    graphJSON1 = json.dumps(fig[0], cls=plotly.utils.PlotlyJSONEncoder)
-                    graphJSON.append(graphJSON1)
-                    graphJSON2 = json.dumps(fig[1], cls=plotly.utils.PlotlyJSONEncoder)
-                    graphJSON.append(graphJSON2)
-                    num_graph=2
-                    return render_template('summary.html', graphJSON=graphJSON,num_graph=num_graph)
-
-                elif(len(fig)==1):
-                    graphJSON1 = json.dumps(fig[0], cls=plotly.utils.PlotlyJSONEncoder)
-                    graphJSON.append(graphJSON1)
-                    num_graph=1
-                    return render_template('summary.html', graphJSON=graphJSON,num_graph=num_graph)
+                figs=plot_summary(path)
+                graphJSONs=[]
+                if figs:
+                    for i,fig in enumerate(figs):
+                        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+                        graphJSONs.append((f"chart_{i}",graphJSON))
+                    return render_template('summary.html', graphJSONs=graphJSONs)
                 else:
                     return "<h1> No Info available</h1>"
         
@@ -84,25 +71,32 @@ def create_application(path):
 
             return render_template("experiment_page.html",folders=folders)
         
-    @app.route('/home2/<experiment>',methods=["POST","GET"])
-    def home2(experiment):
+    @app.route('/experiment_page/<experiment>',methods=["POST","GET"])
+    def experiment_page(experiment):
         if request.method=='POST':
-        
-            notes=request.form['text_area']
-            print(request)
+            download_files_txt=f"{Path.home()}/Downloads/*_docu.txt"
+            download_files_json=f"{Path.home()}/Downloads/*_docu.json"
+            doc_files_txt=glob.glob(download_files_txt)
+            doc_files_json=glob.glob(download_files_json)
+            doc_files_txt=list(map(lambda x:x.replace("\\","/"),doc_files_txt))
+            doc_files_json=list(map(lambda x:x.replace("\\","/"),doc_files_json))
+            if download_files_txt:
+                for file in doc_files_txt:
+                    file_name=file.split("/")[-1][:-9]
+                    print(file_name)
+                    renamed_file=f"{Path.home()}/Downloads/{file_name}.txt"
+                    os.rename(file,renamed_file)
+                    shutil.move(renamed_file,f"{path+'/'+experiment}/plots/{file_name}.txt")
+            if download_files_json:
+                for file in doc_files_json:
+                    file_name=file.split("/")[-1]
+                    shutil.move(f"{Path.home()}/Downloads/{file_name}",f"{path+'/'+experiment}/document/{file_name}")
+
+            notes=request.form.get("text_area_txt")
             text_file = open(f"{path}/team_notes/notes.txt", "w")
             text_file.write(notes)
             text_file.close()
-            '''
-            get the latest downloaded table in the "download" folder
-            and write it as html to experiment notes folder
-            '''
-            download_path=f"{Path.home()}/Downloads/*.html".replace("\\","/")
-            latest_file=get_latest_file(download_path)
-            if latest_file:
-                shutil.copy(latest_file,"./templates/edited_templates/")
-                os.remove(latest_file)
-            return redirect(url_for("home2",experiment=experiment))
+            return redirect(url_for("experiment_page",experiment=experiment))
         else:
             exp_folder=experiment
             table_path=f"table_{exp_folder}.html"
@@ -114,7 +108,11 @@ def create_application(path):
             history_path=f"{path+'/'+exp_folder}/performance/performance.json"
             prediction_path=f"{path+'/'+exp_folder}/prediction/prediction.json"
             plots_path=f"{path+'/'+exp_folder}/plots/"
+            note_doc_path=f"{path+'/'+exp_folder}/document/*_docu.json"
+            note_doc_files=glob.glob(note_doc_path)
+            note_doc_files=list(map(lambda x:x.replace("\\","/"),note_doc_files))
             plot_files=glob.glob(f"{plots_path}/*")
+            
             memory_file_path_exists=False
             history_file_path_exists=False
             prediction_file_path_exists=False
@@ -123,6 +121,7 @@ def create_application(path):
             history_dict={}
             pred_dict={}
             plot_lists=[]
+            doc_contents=[]
             if os.path.exists(memory_path):
                 memory_file = open(memory_path, "r")
                 memory_dict=json.load(memory_file)
@@ -135,6 +134,14 @@ def create_application(path):
                 pred_file = open(prediction_path, "r")
                 pred_dict=json.load(pred_file)
                 prediction_file_path_exists=True
+            if (note_doc_files):
+                for file in note_doc_files:
+                    doc_id=file.split("/")[-1]
+                    doc_file = open(file, "r")
+                    doc_dict=json.load(doc_file)
+                    doc_dict['id_']=doc_id
+                    doc_contents.append(doc_dict)
+                
             if not os.path.exists(f"{path}/team_notes/"):
                 os.mkdir(f"{path}/team_notes/")
                 text_file = open(f"{path}/team_notes/notes.txt", "w")
@@ -146,18 +153,33 @@ def create_application(path):
                 plot_files=list(map(lambda x:x.replace("\\","/"),plot_files))
                 plots_file_name=list(map(lambda x:x.split("/")[-1],plot_files))
                 plot_lists=[]
+                width,height=800,550
                 for file in plots_file_name:
                     file_id=file.split(".")[0]
                     if (f"{file_id}.txt" in plots_file_name):
                         with open(f"{plots_path}/{file_id}.txt", "r+") as file1:
                             notes_str=file1.read()
+                            notes_str=notes_str.strip().split("{title}:")
+                            
+                            if len(notes_str)==2:
+                                print(notes_str[1])
+                                notes_str,title=notes_str[0],notes_str[1]
+                            else:
+                                notes_str,title=notes_str[0]," "
                     else:
                             notes_str=""
                     if not file.endswith(".txt"):
-                            img_file="/static/"+file
+                            if file.endswith('json'):
+                                with open(f"{plots_path}/{file}", "r+") as file1:
+                                    img_file = json.load(file1)
+                                    file_type="plotly"
+                            else:
+                                width, height = imagesize.get(f"{path+'/'+exp_folder}/plots/{file}")
+                                img_file="/plots/"+file
+                                file_type="image"
                     else:
                         continue
-                    plot_lists.append((img_file,notes_str,file_id))
+                    plot_lists.append((img_file,notes_str,file_id,width,f"save_note_{file_id}_txt",file_type,title))
             notes_path=f"{path}/team_notes/notes.txt"
             with open(notes_path) as f:
                 contents = f.read()
@@ -169,8 +191,7 @@ def create_application(path):
                 fig = make_subplots(rows=1, cols=1)
                 graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
                 show_metrics_graph=False
-                
-            return render_template('visualization.html', graphJSON=graphJSON,user_notes=contents,table_path=table_path,show_metrics_graph=show_metrics_graph,img_list=plot_lists,plots_exist=plots_exists)
+            return render_template('visualization.html', graphJSON=graphJSON,user_notes=contents,table_path=table_path,show_metrics_graph=show_metrics_graph,img_list=plot_lists,plots_exist=plots_exists,page_title=experiment,doc_contents=doc_contents)
     def plot_helper(fig,text,row,col):
             fig.add_trace(go.Scatter(
             x=[0],
@@ -238,7 +259,6 @@ def create_application(path):
                 for i in range(y_true_val.shape[1]):
                     y_true = y_true_val[:, i]
                     y_score = y_pred_proba[:, i]
-
                     fpr, tpr, _ = roc_curve(y_true, y_score)
                     auc_score = roc_auc_score(y_true, y_score)
                     precision, recall, thresholds = precision_recall_curve(y_true, y_score)
@@ -278,14 +298,36 @@ def create_application(path):
         return fig
     
     def get_latest_file(download_path):
-        pattern=r'edited_page\(?'
+        pattern=r'notes_docu\(?'
         list_of_files = glob.glob(download_path)
-        print(list_of_files)
         csv_files=list(map(lambda x:x.split("\\")[1],list_of_files))
         matched_files=list(filter(re.compile(pattern).match, csv_files))
         list_of_files=list(map(lambda x:f"{Path.home()}/Downloads/"+x,list(matched_files)))
-        latest_file = max(list_of_files, key=os.path.getctime)
+        if list_of_files:
+            latest_file = max(list_of_files, key=os.path.getctime)
+        else:
+            latest_file=""
         return latest_file
 
 
     app.run()
+
+
+# In[4]:
+
+
+path=os.path.abspath("../")
+create_application("D:\demo_folder\experiment2")
+
+
+# In[ ]:
+
+
+get_ipython().run_line_magic('tb', '')
+
+
+# In[ ]:
+
+
+
+
