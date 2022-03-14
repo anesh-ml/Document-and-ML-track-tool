@@ -237,7 +237,7 @@
    
     <div class="note_div" id={{i.2}} onclick="set_id_global(this.id)">
         <h2 id="{{i.2}}_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 2px;">{{i.5}}</h2>
-        <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
+        <hr style="height:1px;border-width:0;color:rgb(95, 96, 99);background-color:rgb(47, 74, 92); width:40%">
         {% if i[3]>1200 %}
 
         <img src="{{i[0]}}" width="900" id='{{i.2}}_img' onclick="set_id_global(this.id)">
@@ -315,6 +315,7 @@
             onclick="download_page()">
         <input class="button button1" type="submit" value="Hide/show team notes" onclick="hide_notes()">
         <input class="button button1" type="submit" value="Add document" onclick="add_doc()">
+        <input class="button button1" type="submit" value="Download document" onclick="download_doc()">
     </div>
 
     <script>
@@ -398,6 +399,24 @@
         }
     </script>
     <script>
+        function download_doc() {
+            document.getElementsByClassName("topnav")[0].style.visibility = "hidden";
+            var save_btn = document.getElementsByClassName("save_note_btn")
+
+            for (var i = 0; i < save_btn.length; i++) {
+                console.log(i)
+                document.getElementsByClassName("save_note_btn")[i].style.visibility = "hidden"
+            }
+            var pageSource = document.getElementById(selected_id).innerHTML;
+            var downloadLink = document.createElement('a');
+            downloadLink.href = "data:text/html," + unescape(encodeURI(escape(pageSource)));
+            downloadLink.target = '_blank';
+            downloadLink.download = 'document.html';
+            downloadLink.click();
+            window.location.reload();
+        }
+    </script>
+    <script>
         var hide_count = 0
         function hide_notes() {
             window.hide_count += 1
@@ -429,6 +448,7 @@
             h2.id = `doc_${num_doc}_title`
             h2.contentEditable = true
             hr.width = "40%"
+            hr.color="color:rgb(63, 65, 68)"
             save_btn.id = `docbtn_${num_doc}`
             save_btn.className = "save_note_btn button1"
             save_btn.value = "Save changes"
