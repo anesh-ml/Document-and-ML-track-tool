@@ -12,6 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
 
+
     <style>
         table {
             table-layout: fixed;
@@ -162,7 +163,7 @@
             max-width: 100%;
 
 
-            border: 2px dashed rgb(198, 198, 235);
+            border: 2px dashed rgb(143, 143, 224);
 
         }
 
@@ -218,15 +219,24 @@
     <br>
 
     <h1 class="heading"><strong>{{page_title}}</strong></h1>
-    {% if show_metrics_graph %}
-    <div id='chart' class='chart'></div>
+    {% if plots_dict.memory_exists %}
+    <h2>Memory Consumption</h2>
+    <img src="data:image/png;base64,{{plots_dict.memory}}">
     {% endif %}
+    {% if plots_dict.history_exists %}
+    <h2>Training Performance</h2>
+    <img src="data:image/png;base64,{{plots_dict.history}}">
+    {% endif %}
+    {% if plots_dict.prediction_exists %}
+    <h2>Confusion Matrix</h2>
+    <img src="data:image/png;base64,{{plots_dict.prediction}}">
+    {% endif %}
+
     {% if plots_exist %}
     {% for i in img_list %}
-    {% if i.5=='image' %}
-
+   
     <div class="note_div" id={{i.2}} onclick="set_id_global(this.id)">
-        <h2 id="{{i.2}}_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 5px;">{{i.6}}</h2>
+        <h2 id="{{i.2}}_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 2px;">{{i.5}}</h2>
         <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
         {% if i[3]>1200 %}
 
@@ -246,62 +256,41 @@
 
         <div id="{{i.2}}_docu">{{i.1|safe}}</div>
         <br>
-        <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
+        <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download_img_notes()">
 
     </div>
 
-    {% else %}
-
-    <div class="note_div" id={{i.2}} onclick="set_id_global(this.id)">
-        <h2 id="{{i.2}}_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 5px;">{{i.6}}</h2>
-        <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
-        <div id='chart_{{i.2}}' class='chart' onclick="set_id_global(this.id)"></div>
-
-        <script type='text/javascript'>
-            "use strict";
-            var graph = {{ i[0]| safe }};
-            plot_plotly(graph, 'chart_{{i.2}}')
-        </script>
-        <h3><strong>Notes</strong></h3>
-
-        <div id="{{i.2}}_docu">{{i.1|safe}}</div>
-        <br>
-        <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
-    </div>
-
-    {% endif %}
     <br>
     {% endfor %}
     {% endif %}
 
 
-    <form method="post">
-
-        {% if table_path=="none" %}
-        <p> </p>
-
-        {% else %}
-        <h2><strong>User notes</strong></h2>
-        <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
-        {% include table_path %}
-        {% endif %}
-
-    </form>
-
     <br>
     <br>
-    <h2><strong>Document</strong></h2>
+    <h2><strong>User Notes</strong></h2>
     <br>
     <br>
     <div id="doc_notes" onclick="set_id_global(this.id)" class="note_div" style="padding: 10px;">
-        <h2 id="doc_notes_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 5px;">{{doc_title}}
+        <h2 id="doc_notes_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 5px;">{{note_doc.title}}
         </h2>
         <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
         <div id="doc_notes_docu">
-            {{doc|safe}}
+            {{note_doc.contents|safe}}
         </div>
         <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
     </div>
+    <br>
+
+    {% for content in doc_contents %}
+    <div id="{{content.id_}}" class="note_div" onclick="set_id_global(this.id)">
+        <h2 id="{{content.id_}}_title" contenteditable="true">{{content.title}}</h2>
+        <hr style="width:40%">
+        <div id="{{content.id_}}_docu">{{content.contents|safe}}</div>
+        <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
+    </div>
+    <br>
+    <br>
+    {% endfor %}
     <br>
     <br>
     <br>
@@ -312,10 +301,11 @@
 
         <form action="#" method="post" id="saveChanges">
             <textarea class="text_area" id="team_text" name="text_area_txt"
-                onclick="set_id_global(this.id)">{{user_notes}}</textarea>
+                onclick="set_id_global(this.id)">{{team_notes}}</textarea>
 
         </form>
     </div>
+    
     <div class="topnav">
         <button id="edit" class="button button1" onclick="edit_test()" type="button">Create/Edit Document</button>
         <button id="save" class="button button1" onclick="save_test()" type="button">Render</button>
@@ -326,14 +316,6 @@
         <input class="button button1" type="submit" value="Hide/show team notes" onclick="hide_notes()">
         <input class="button button1" type="submit" value="Add document" onclick="add_doc()">
     </div>
-
-    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-    <script type='text/javascript'>
-        var graphs = {{ graphJSON | safe}};
-
-        Plotly.plot('chart', graphs, {});
-
-    </script>
 
     <script>
         $(document).ready(function () {
@@ -360,11 +342,32 @@
             var element = document.createElement('a');
             text = document.getElementById(selected_id + "_docu").innerHTML;
             title = document.getElementById(selected_id + "_title").innerHTML;
-            var dict = { "content": text, "title": title }
+            var dict = { "contents": text, "title": title }
             dict = JSON.stringify(dict)
             filename = selected_id + "_docu" + ".json"
             element.setAttribute('href', 'data:text/json;charset=utf-8,' +
                 encodeURIComponent(dict));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+        }
+
+    </script>
+    <script>
+        function download_img_notes() {
+
+            var element = document.createElement('a');
+            text = document.getElementById(selected_id + "_docu").innerHTML;
+            title = document.getElementById(selected_id + "_title").innerHTML;
+            contents=text+`\n\n{title}:${title}`
+            filename = selected_id + "_docu" + ".txt"
+            element.setAttribute('href', 'data:text/html;charset=utf-8,' +
+                encodeURIComponent(contents));
             element.setAttribute('download', filename);
 
             element.style.display = 'none';
@@ -407,9 +410,10 @@
 
         }
     </script>
-    <script>
+    <script >
         window.onload = function () {
             document.getElementById("team_notes").style.visibility = "hidden";
+            window.num_doc={{prev_num_doc}}
         };
     </script>
     <script>
@@ -462,15 +466,7 @@
 
         }
     </script>
-    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-
-    <script type='text/javascript'>
-        "use strict";
-        function plot_plotly(graph, chart_id) {
-            var graphs2 = graph;
-            Plotly.plot(chart_id, graphs2, {});
-        }
-    </script>
+   
 </body>
 
 </html>

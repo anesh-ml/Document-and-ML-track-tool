@@ -1,3 +1,4 @@
+from pydoc import doc
 import ipywidgets as widgets # Loads the Widget framework.
 from IPython.core.magics.namespace import NamespaceMagics # Used to query namespace.
 import os
@@ -109,11 +110,19 @@ def add2doc(EXP_PATH,input_):
         html=df.to_html()
         html=html.replace('<table border="1" class="dataframe">','<table border="1" width="100%" contenteditable=true')
         with open(f"{EXP_PATH}/document/doc_notes_docu.txt", 'a') as file:
-            file.write(f"\n{html}")
+            file.write(html+"\n")
     else:
         if not os.path.exists(f"{EXP_PATH}/document/"):
-            os.mkdir(f"{EXP_PATH}/document/")    
-            with open(f"{EXP_PATH}/document/doc_notes_docu.txt", "w") as file1:
-                file1.write("")
-        with open(f"{EXP_PATH}/document/doc_notes_docu.txt", 'a') as file:
-            file.write(input_+"\n")
+            os.mkdir(f"{EXP_PATH}/document/")  
+            with open(f"{EXP_PATH}/document/doc_notes_docu.json", "w") as file1:
+                json.dump({"contents":"","title":"Title"}, file1)
+        elif not os.path.exists(f"{EXP_PATH}/document/doc_notes_docu.json"):
+            with open(f"{EXP_PATH}/document/doc_notes_docu.json", "w") as file1:
+                json.dump({"contents":"","title":"Title"}, file1)
+        
+        with open(f"{EXP_PATH}/document/doc_notes_docu.json", 'r') as file:
+            doc_=json.load(file)
+            contents=f"{doc_['contents']}<br>{input_}"
+            doc_["contents"]=contents
+        with open(f"{EXP_PATH}/document/doc_notes_docu.json", 'w') as file:
+            json.dump(doc_, file)
