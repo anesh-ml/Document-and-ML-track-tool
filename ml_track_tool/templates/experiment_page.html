@@ -1,6 +1,38 @@
 <html>
+<style>
+    .center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+.button {
+            background-color: #3b637a;
+            /* Green */
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            transition-duration: 0.3s;
+            cursor: pointer;
+            border-radius: 12px;
 
+        }
+
+        .button1:hover {
+            background-color: #1da52f;
+            color: white;
+
+        }
+
+</style>
 <body>
+    <img src="/plots/logo/logo.jpg" class="center">
+    
     <form method="post">
         <label for="experiments">Choose the experiment:</label>
         <select name="experiment" id="exp">
@@ -10,8 +42,8 @@
 
         </select>
         <br><br>
-        <input type="submit" value="Show experiment" name="submit_btn">
-        <input type="submit" value="Show Summary" name="submit_btn">
+        <input type="submit" class="button button1" value="Show experiment" name="submit_btn">
+        <input type="submit" class="button button1" value="Show Summary" name="submit_btn">
     </form>
 
 </body>

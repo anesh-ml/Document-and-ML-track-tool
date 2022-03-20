@@ -76,7 +76,7 @@
             /* Green */
             border: none;
             color: white;
-            padding: 10px 25px;
+            padding: 8px 22px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
@@ -163,8 +163,14 @@
             max-width: 100%;
 
 
-            border: 2px dashed rgb(143, 143, 224);
+            border: 2px solid rgb(134, 134, 223);
 
+        }
+
+        .div_sep{
+            width: 100%;
+            height: 80px;
+            background: #cedaeb;
         }
 
         .save_note_btn {
@@ -234,19 +240,19 @@
 
     {% if plots_exist %}
     {% for i in img_list %}
-   
+    <div class="div_sep" id="div_sep_{{i.2}}" ></div>
     <div class="note_div" id={{i.2}} onclick="set_id_global(this.id)">
-        <h2 id="{{i.2}}_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 2px;">{{i.5}}</h2>
+        <h2 id="{{i.2}}_title" contenteditable="true" style="text-align:center;">{{i.5}}</h2>
         <hr style="height:1px;border-width:0;color:rgb(95, 96, 99);background-color:rgb(47, 74, 92); width:40%">
         {% if i[3]>1200 %}
 
-        <img src="{{i[0]}}" width="900" id='{{i.2}}_img' onclick="set_id_global(this.id)">
-
+        
+        <img src="data:image/png;base64,{{i[0]}}" width="1000" id='{{i.2}}_img' onclick="set_id_global(this.id)">
 
         {% else %}
 
-        <img src="{{i[0]}}" id='{{i.2}}_img' onclick="set_id_global(this.id)">
-
+       
+        <img src="data:image/png;base64,{{i[0]}}" id='{{i.2}}_img' onclick="set_id_global(this.id)">
 
         {% endif %}
 
@@ -260,18 +266,17 @@
 
     </div>
 
-    <br>
+    
     {% endfor %}
     {% endif %}
 
-
-    <br>
-    <br>
+    {% if note_doc_exists %}
+    <div class="div_sep">
     <h2><strong>User Notes</strong></h2>
-    <br>
-    <br>
+    </div>
+    
     <div id="doc_notes" onclick="set_id_global(this.id)" class="note_div" style="padding: 10px;">
-        <h2 id="doc_notes_title" contenteditable="true" style="width: 50%;margin: 0 auto;padding: 5px;">{{note_doc.title}}
+        <h2 id="doc_notes_title" contenteditable="true" style="text-align:center;">{{note_doc.title}}
         </h2>
         <hr style="height:1px;border-width:0;color:gray;background-color:rgb(47, 74, 92); width:40%">
         <div id="doc_notes_docu">
@@ -279,18 +284,22 @@
         </div>
         <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
     </div>
-    <br>
-
+    {% endif %}
+    {% if docs_exists %}
+    <div class="div_sep">
+        <h2><strong>User created documents</strong></h2>
+    </div>
+    {% endif %}
     {% for content in doc_contents %}
     <div id="{{content.id_}}" class="note_div" onclick="set_id_global(this.id)">
-        <h2 id="{{content.id_}}_title" contenteditable="true">{{content.title}}</h2>
+        <h2 id="{{content.id_}}_title" contenteditable="true" style="text-align:center;">{{content.title}}</h2>
         <hr style="width:40%">
         <div id="{{content.id_}}_docu">{{content.contents|safe}}</div>
         <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
     </div>
-    <br>
-    <br>
+    <div class="div_sep" ></div>
     {% endfor %}
+    
     <br>
     <br>
     <br>
@@ -311,11 +320,10 @@
         <button id="save" class="button button1" onclick="save_test()" type="button">Render</button>
 
         <input class="button button1" type="submit" value="Apply changes" name="save_changes" form="saveChanges">
-        <input class="button button1" type="submit" value="Download page" name="download_page"
-            onclick="download_page()">
         <input class="button button1" type="submit" value="Hide/show team notes" onclick="hide_notes()">
         <input class="button button1" type="submit" value="Add document" onclick="add_doc()">
         <input class="button button1" type="submit" value="Download document" onclick="download_doc()">
+        
     </div>
 
     <script>
@@ -400,13 +408,14 @@
     </script>
     <script>
         function download_doc() {
-            document.getElementsByClassName("topnav")[0].style.visibility = "hidden";
+            
             var save_btn = document.getElementsByClassName("save_note_btn")
-
+            
             for (var i = 0; i < save_btn.length; i++) {
                 console.log(i)
                 document.getElementsByClassName("save_note_btn")[i].style.visibility = "hidden"
             }
+            document.getElementById(selected_id+"_title").contentEditable=false
             var pageSource = document.getElementById(selected_id).innerHTML;
             var downloadLink = document.createElement('a');
             downloadLink.href = "data:text/html," + unescape(encodeURI(escape(pageSource)));
@@ -441,12 +450,14 @@
             var main_div = document.createElement("div")
             var div_ele = document.createElement("div")
             var save_btn = document.createElement("input")
+            var div_sep=document.createElement("div")
             var hr = document.createElement("hr")
             var h2 = document.createElement('h2')
             var br = document.createElement('br')
-            h2.innerHTML = "Title"
+            h2.innerHTML = "Document title"
+            h2.contentEditable=true
             h2.id = `doc_${num_doc}_title`
-            h2.contentEditable = true
+            h2.setAttribute("style","text-align:center;")
             hr.width = "40%"
             hr.color="color:rgb(63, 65, 68)"
             save_btn.id = `docbtn_${num_doc}`
@@ -463,8 +474,10 @@
             main_div.appendChild(div_ele)
             main_div.appendChild(save_btn)
             document.body.appendChild(main_div)
-            document.body.appendChild(br)
-            document.body.appendChild(br)
+            div_sep.className="div_sep"
+            div_sep.id=`div_sep_${num_doc}`
+            document.body.appendChild(div_sep)
+            
             console.log(num_doc)
             console.log(div_ele.id)
             window.num_doc += 1
@@ -483,6 +496,13 @@
     <script>
         function delete_element() {
             document.getElementById(selected_id).outerHTML = "";
+            selected_doc=selected_id.split("_")
+            if(selected_doc[0]=='doc'){
+                selected_doc_num=selected_doc[selected_doc.length-1]
+                div_sep_ele=document.getElementById(`div_sep_${selected_doc_num}`)
+                div_sep_ele.parentNode.removeChild(div_sep_ele)
+            }
+            
 
         }
     </script>

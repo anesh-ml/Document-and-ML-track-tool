@@ -126,3 +126,7 @@ def add2doc(EXP_PATH,input_):
             doc_["contents"]=contents
         with open(f"{EXP_PATH}/document/doc_notes_docu.json", 'w') as file:
             json.dump(doc_, file)
+
+def create_experiment(EXP_PATH):
+    if not os.path.exists(EXP_PATH):
+        os.makedirs(EXP_PATH)

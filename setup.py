@@ -7,7 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '0.0.12'
+VERSION = '0.0.13'
 DESCRIPTION = 'Ml tracking tool using jupyter extensions'
 LONG_DESCRIPTION = 'A package that allows users to document their ML experiments.'
 
@@ -25,7 +25,7 @@ setup(
     package_dir={'':'.'},
     include_package_data=True,
     include_dirs=True,
-    package_data={'ml_track_tool':["templates/*.html"]},
+    package_data={'ml_track_tool':["templates/*.html","logo.jpg"]},
     py_modules=["plotly_","summary_plots","OpenSheet","utils","flask_app"],
     install_requires=['ipysheet', 'scikit-plot', 'lime','Shapely','plotly','flask','jinja2','psutil','xlwt','imagesize'],
     keywords=['python', 'Machine learning', 'MLops', 'ML tracking system'],

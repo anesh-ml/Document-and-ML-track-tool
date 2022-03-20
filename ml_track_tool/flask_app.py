@@ -21,12 +21,16 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import base64
 import io
-#from ml_track_tool.flask_app import create_application
+
 
 
 def create_application(path):
     app=Flask(__name__,static_folder=f"{path}/plots")
     path=path.replace("\\","/")
+    current_path=pathlib.Path(__file__).parent.resolve()
+    if not os.path.exists(f"{path}/plots/logo"):
+        os.makedirs(f"{path}/plots/logo")
+    shutil.copy(f"{current_path}/logo.jpg",f"{path}/plots/logo")
     path="/".join(path.split("/")[:-1])
     current_path=pathlib.Path(__file__).parent.resolve()
     my_loader = jinja2.ChoiceLoader([
@@ -69,11 +73,12 @@ def create_application(path):
             if download_files_txt:
                 for file in doc_files_txt:
                     file_name=file.split("/")[-1][:-9]
-                    print(file_name)
                     renamed_file=f"{Path.home()}/Downloads/{file_name}.txt"
                     os.rename(file,renamed_file)
                     shutil.move(renamed_file,f"{path+'/'+experiment}/plots/{file_name}.txt")
             if download_files_json:
+                if not os.path.exists(f"{path+'/'+experiment}/document"):
+                    os.makedirs(f"{path+'/'+experiment}/document")
                 for file in doc_files_json:
                     file_name=file.split("/")[-1]
                     shutil.move(f"{Path.home()}/Downloads/{file_name}",f"{path+'/'+experiment}/document/{file_name}")
@@ -92,7 +97,7 @@ def create_application(path):
             note_doc_path=f"{path+'/'+exp_folder}/document/*_docu.json"
             note_doc_files=glob.glob(note_doc_path)
             note_doc_files=list(map(lambda x:x.replace("\\","/"),note_doc_files))
-            plot_files=glob.glob(f"{plots_path}/*")
+            plot_files=glob.glob(f"{plots_path}/*.*")
             memory_file_path_exists=False
             history_file_path_exists=False
             prediction_file_path_exists=False
@@ -103,6 +108,8 @@ def create_application(path):
             plot_lists=[]
             doc_contents=[]
             prev_num_doc=0
+            docs_exists=False
+            note_doc_exists=False
             plots_dict={}
             note_doc_dict={}
             if os.path.exists(memory_path):
@@ -166,15 +173,20 @@ def create_application(path):
                         doc_dict=json.load(doc_file)
                         doc_dict['id_']=doc_id
                         doc_contents.append(doc_dict)
+                        docs_exists=True
                         doc_file.close()
                     else:
                         note_doc = open(file, "r")
                         note_doc_dict=json.load(note_doc)
+                        note_doc_exists=True
                         note_doc.close()
                 num_doc=list(map(lambda x:x.split("/")[-1][:-5].split("_")[1],note_doc_files))
-                prev_num_doc=int(max(x for x in num_doc if x.isdigit()))+1
+                try:
+                    prev_num_doc=int(max(x for x in num_doc if x.isdigit()))+1
+                except Exception as e:
+                    pass
             if not os.path.exists(f"{path}/team_notes/"):
-                os.mkdir(f"{path}/team_notes/")
+                os.makedirs(f"{path}/team_notes/")
                 text_file = open(f"{path}/team_notes/notes.txt", "w")
                 text_file.write("")
                 text_file.close()
@@ -190,26 +202,25 @@ def create_application(path):
                     if (f"{file_id}.txt" in plots_file_name):
                         with open(f"{plots_path}/{file_id}.txt", "r+") as file1:
                             notes_str=file1.read()
-                            notes_str,title=notes_str.split("{title}:")
+                            notes_str_list=notes_str.split("{title}:")
+                            notes_str=notes_str_list[0]
+                            title=notes_str_list[-1] if len(notes_str_list)>1 else "Title" 
                             
                     else:
                             notes_str=""
                             title="Title"
                     if not file.endswith(".txt"):
-                            if file.endswith('json'):
-                                with open(f"{plots_path}/{file}", "r+") as file1:
-                                    img_file = json.load(file1)
-                                    
-                            else:
-                                width, height = imagesize.get(f"{path+'/'+exp_folder}/plots/{file}")
-                                img_file=f"/plots/{file}"
+                        with open(f"{path+'/'+exp_folder}/plots/{file}", "rb") as image_file:
+                                encoded_img = base64.b64encode(image_file.read()).decode("utf-8")
+                        width, height = imagesize.get(f"{path+'/'+exp_folder}/plots/{file}")
                     else:
                         continue
-                    plot_lists.append((img_file,notes_str,file_id,width,f"save_note_{file_id}_txt",title))
+                    plot_lists.append((encoded_img,notes_str,file_id,width,f"save_note_{file_id}_txt",title))
             notes_path=f"{path}/team_notes/notes.txt"
             with open(notes_path) as f:
                 team_notes = f.read()
-            return render_template('visualization.html',img_list=plot_lists,plots_exist=plots_exists,page_title=experiment,doc_contents=doc_contents,note_doc=note_doc_dict,prev_num_doc=prev_num_doc,plots_dict=plots_dict,team_notes=team_notes)
+            return render_template('visualization.html',img_list=plot_lists,plots_exist=plots_exists,page_title=experiment,doc_contents=doc_contents,note_doc=note_doc_dict,prev_num_doc=prev_num_doc,plots_dict=plots_dict,docs_exists=docs_exists,note_doc_exists=note_doc_exists,team_notes=team_notes)
+    
     
     def to_base64(plt):
         my_stringIObytes = io.BytesIO()

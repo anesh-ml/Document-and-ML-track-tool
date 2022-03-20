@@ -1,137 +1,127 @@
-# ML tracking tool 
+<h1 style="text-align:center"> Documenting and ML tracking tool</h1> 
 
-- This is still a prototype and some features are yet to be developed
+## What this app can do
+
+- This application is created to **document findings in analysis**, **ML experiments and track supervised ML experiments**.
+
+- The documentation can be done easily from the jupyter notebook while working on it without having to cleaning/creating a notebook for **documenting the analysis/findings**. Users can document their findings on the fly and can later add more points from the flask app.
+
+- All the above could be done by a single click using jupyter extensions.
+
+- Compare the performance metrics **(accuracy,recall.precision,f1 score)** of the different supervised ML algorithms
+
+- Compare the computation power and execution time of each alorithms used in the experiments.
+
+## What this app can't do
+
+- Unlike other tools like weights and biases, MLflow etc this app can't track all the metrics of ML algorithms.
+
+
+## Who can use this app
+
+- Data scientist,data analyst and machine learning engineer.
+
+
+## About the application
+
+- This is a MVP and some features are yet to be developed
 
 - Users can for now,
 
-    - DO **data versioning** and **notebook versioning**
-    - Open a spreadsheet(not excel spreadsheet) from a **dataframe, file and create a new spreadsheet**
-    - **Interpret ML models** using LIME and Shapley. Analyze the model output and then may be curate/edit the data based on the interpretation
-    - **Plot metrics** such as accuracy, precision, recall and ROC curve. With a click, users can know these metrics and then maybe jot down these metrics in a spreadsheet and download it.
-    - Users can **write down notes, metrics** in the spreadsheet and **download** to a folder.
+    - **Document** their analysis, ml experiments from jupyter notebook using the extensions
+    - **Visualize** computation power(GPU and RAM),time taken and different performance metrics of all the experiments.
 
-- All these can be done with a button click. Users just need to type the arguments in a cell and click the appropriate button.
+- All these can be done with a button click.
 
-## Open spreadsheet
+- Users can record the memory consumption, save the performance metrics for each experiment. A comparison chart is created like below so that users can see and know what's best for them. These info are displayed in the **Summary page**
 
-- Create a spreadsheet from dataframe,file or a new spreadsheet
+![alt text](summary.png "Title")
 
+- In the experiment page,**memory consumption over time**, **training performance**,**confusion matrix** and **documents** are displayed.
 
-### If opening from **dataframe**:
+![alt text](train_perf.png "Title")
 
-   **Command**: `DataFrame rows`
-    
-        Eg: df 10 or df
-        
-    - rows is given if you want to return only top n_rows
-    
-    
-### If opening a sheet from a **file**
+<h1 style="text-align:center;">How to use it</h1>
 
- **Command**: `FileName`
- 
-         Eg: "sample_data.csv"
-         
-### Opening a **new spreadsheet**
+- Users need to define the **absolute path of the folder** that would contain all the experiments. The path must be stored in a variable named **EXP_PATH**.
 
-   **Command**: `"new sheet",n_rows,n_cols`
+`Eg: EXP_PATH="D:/experiment_folder/experiment2"`
 
--------------------------------------------------------------------------------------------------------------------------------
+- Then, click the **create experiment** button to create the experiment directory.
 
-## Edit sheet
+- The above steps are necessary for the application to work.
 
-- Operations supported are **creating columns** and **filter**
+# Extensions
 
-### Create columns
+## Monitor memory consumption and execution time
 
-**Command**: `create_col n_col`
+- To start recording the memory consumption of an algorithm, just click **record memory** button.To stop recording the memory consumption, insert **monitor.stop()** where the algorithm ends.
 
-        Eg: create_col 3
-        
-### Filter sheet
+`Eg: train_NN():
+        .......
+        .......
+        return model
+     model=train_NN()
+     monitor.stop()`
 
-- Only **==** and multiple **AND** conditions are supported now. 
+- Along with memory recording, **time** is also started. Hence, it is better to start recording the memory when the code is ready to execute.
 
-**Command**: `filter  condition`
-
-        Eg: filter "col==question&col==request"
-        
-
-
--------------------------------------------------------------------------------------------------------------------------------
-
-## Interpret Model
-
-- Currently, interpretation for NLP model is supported. Will be extending it to computer vision model.
-
-**Command**: `class_name(list), sheet/text, inference code`
-
-- **class_name** can be like ["positive","negative"]. 
-
-- input can be a **sheet, list of texts or just a single sentence**.
-
-- **inference code** is the prediction code which take in **raw string** and **output probabilities**.
-
-      Eg: ['postive','negative'], ["movie is good", 'waste of money'], inference_code
-      
-          ["positive","negative"],sheet,inference_code
-            
-          ["positive","negative"],"movie is good",inference_code
 
 --------------------------------------------------------------------------------------------------------------------------------
-
-## Download sheet
-
-- Download the filled sheet. It will download the latest created and edited sheet.
-
-    - You can save it as **.xls or .csv.**
-
-**Command**: `"./folder/sheet.xls"`
-
-- If you want to save your spreadsheet as notes save it as `notes.xls`.
-
--------------------------------------------------------------------------------------------------------------------------------
-
-## Notebook Versioning
-
-- Save the notebook with different to a folder and keep working in the same notebook.
-
-- With a single click, make a version of your notebook.
-
-**Command**: file path
-
-    eg: "./experiment1/notebook_v1.ipynb"
-
---------------------------------------------------------------------------------------------------------------------------------
-
-## Plot metrics
-
-- Plot ROC curve along the accuracy, F1 score, precision, recall.
-
-- User needs to get the probability of the prediction and true labels.
-
-        Eg: y_true,y_pred_proba
-
-------------------------------------------------------------------------------------------------------------------------------
 
 ## Save dictionary
 
-- Save config files, predictions as json.
-
-- Store the predictions,hyperparameters,etc in dictionary as save it as json.
+- Save predictions as json. Users needs to store the y_true and y_pred_proba as dictionary.
 
 **Command**: dict variable,file_type,file_path_to_store
 
    - Eg: `pred_dict,prediction,./experiment2/`
 
+--------------------------------------------------------------------------------------------------------------------------------
+
+# Note taking features
+
+## Open note
+
+- When users click **open note** button, a text editor is created in the jupyter notebook to add notes about the plots or about anything.
+
+- User needs to manually save the plot to the **plots** folder.Since the **EXP_PATH** is already defined, we can use f string
+
+`Eg: f"{EXP_PATH}/plots/plot_img.jpg"`
+
+## Save note
+
+- Click **save note** when users wants to save a note about a plot. Users can save plots and their interpretation about the plots to the flask app.
+
+- User needs to define the file name a empty cell and the click **save note**. The file name should be same as the file name of the plot image so that the note can be tagged to the plot image.
+
+`Eg:plot_img.txt`.
+
+## Add to app
+
+- This is used to add notes from jupyter notebook to the document in the flask application.
+
+- Open a note. Write your thoughts in the text editor. Click **add to app** button only when you need to add notes to the document.
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
 ## Experiment application
 
-- All the results saved are displayed in the application. The application can be opened with a single click from jupyter notebook
+- All the results saved are displayed in the application. Click the **experiment app** to open the application that has all the documents and tracked metrics. 
 
-- Team members can select any experiments and the below information will be displayed
+- Users can **create many number of documents** in the flask application and **download** them as html.
 
-![alt text](memory.JPG "Title")
+## Documentation demo video
 
-![alt text](performance.JPG "Title")
+<video controls src="demo_vid.mp4" width="100%"/>
 
-![alt text](notes.JPG "Title")
+## Supervised ML tracking demo
+
+<video controls src="ml_track_demo.mp4" width="100%"/>
+
+
+```python
+
+```
