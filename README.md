@@ -1,5 +1,20 @@
 <h1 style="text-align:center"> Documenting and ML tracking tool</h1> 
 
+## Purpose of the app
+
+- This application is created to do some of the data science development work like documentation, compare supervised ML algorithms using jupyter notebook.
+
+- Users can **document their findings on the fly** as they work in their jupyter notebook. 
+
+- User can also **compare** the different performance metrics of the **supervised ML algorithm** of all the experiments.
+
+- **Visualize** computation power(GPU and RAM),time taken 
+
+- Users can **share their experiments and analysis** with their team via a shared folder or they could copy the entire experiment older in their local. Their team needs to pip install the application and mention the absolute path of the experiment folder.
+
+- Since the application runs in the local, it is **more secure**.
+
+
 ## What this app can do
 
 - This application is created to **document findings in analysis**, **ML experiments and track supervised ML experiments**.
@@ -10,11 +25,13 @@
 
 - Compare the performance metrics **(accuracy,recall.precision,f1 score)** of the different supervised ML algorithms
 
-- Compare the computation power and execution time of each alorithms used in the experiments.
+- **Compare** the **computation power** and **execution time** of each alorithms used in the experiments.
+
+- **Download** the each document separately. 
 
 ## What this app can't do
 
-- Unlike other tools like weights and biases, MLflow etc this app can't track all the metrics of ML algorithms.
+- Unlike other tools like weights and biases, MLflow etc this app can't track all the metrics of a ML algorithm.
 
 
 ## Who can use this app
@@ -22,24 +39,11 @@
 - Data scientist,data analyst and machine learning engineer.
 
 
-## About the application
-
-- This is a MVP and some features are yet to be developed
-
-- Users can for now,
-
-    - **Document** their analysis, ml experiments from jupyter notebook using the extensions
-    - **Visualize** computation power(GPU and RAM),time taken and different performance metrics of all the experiments.
-
-- All these can be done with a button click.
-
 - Users can record the memory consumption, save the performance metrics for each experiment. A comparison chart is created like below so that users can see and know what's best for them. These info are displayed in the **Summary page**
 
-![alt text](summary.png "Title")
 
 - In the experiment page,**memory consumption over time**, **training performance**,**confusion matrix** and **documents** are displayed.
 
-![alt text](train_perf.png "Title")
 
 <h1 style="text-align:center;">How to use it</h1>
 
@@ -89,7 +93,7 @@
 
 `Eg: f"{EXP_PATH}/plots/plot_img.jpg"`
 
-## Save note
+### Save note
 
 - Click **save note** when users wants to save a note about a plot. Users can save plots and their interpretation about the plots to the flask app.
 
@@ -97,7 +101,7 @@
 
 `Eg:plot_img.txt`.
 
-## Add to app
+### Add to app
 
 - This is used to add notes from jupyter notebook to the document in the flask application.
 
@@ -112,16 +116,3 @@
 - All the results saved are displayed in the application. Click the **experiment app** to open the application that has all the documents and tracked metrics. 
 
 - Users can **create many number of documents** in the flask application and **download** them as html.
-
-## Documentation demo video
-
-<video controls src="demo_vid.mp4" width="100%"/>
-
-## Supervised ML tracking demo
-
-<video controls src="ml_track_demo.mp4" width="100%"/>
-
-
-```python
-
-```
