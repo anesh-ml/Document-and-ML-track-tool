@@ -298,7 +298,7 @@
     {% endif %}
     {% for content in doc_contents %}
     <div id="{{content.id_}}" class="note_div" onclick="set_id_global(this.id)">
-        <h2 id="{{content.id_}}_title" contenteditable="true">{{content.title}}</h2>
+        <h2 id="{{content.id_}}_title" contenteditable="true" style="text-align:center;">{{content.title}}</h2>
         <hr style="width:40%">
         <div id="{{content.id_}}_docu">{{content.contents|safe}}</div>
         <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">

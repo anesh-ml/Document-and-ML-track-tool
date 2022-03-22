@@ -129,4 +129,4 @@ def add2doc(EXP_PATH,input_):
 
 def create_experiment(EXP_PATH):
     if not os.path.exists(EXP_PATH):
-        os.makedirs(EXP_PATH)
+        os.makedirs(f"{EXP_PATH}/plots")

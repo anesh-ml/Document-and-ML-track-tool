@@ -10,7 +10,7 @@
 
 - **Visualize** computation power(GPU and RAM),time taken 
 
-- Users can **share their experiments and analysis** with their team via a shared folder or they could copy the entire experiment older in their local. Their team needs to pip install the application and mention the absolute path of the experiment folder.
+- Users can **share their experiments and analysis** with their team via a shared folder or they could copy the entire experiment folder in their local. Their team needs to pip install the application and mention the absolute path of the experiment folder.
 
 - Since the application runs in the local, it is **more secure**.
 
@@ -29,21 +29,32 @@
 
 - **Download** the each document separately. 
 
-## What this app can't do
-
-- Unlike other tools like weights and biases, MLflow etc this app can't track all the metrics of a ML algorithm.
-
-
 ## Who can use this app
 
 - Data scientist,data analyst and machine learning engineer.
 
+## Installation
+
+pip install MlTrackTool
+
+## About the application
+
+- This is a MVP and some features are yet to be developed
+
+- Users can for now,
+
+    - **Document** their analysis, ml experiments from jupyter notebook using the extensions
+    - **Visualize** computation power(GPU and RAM),time taken and different performance metrics of all the experiments.
+
+- All these can be done with a button click.
 
 - Users can record the memory consumption, save the performance metrics for each experiment. A comparison chart is created like below so that users can see and know what's best for them. These info are displayed in the **Summary page**
 
+![alt text](summary.png "Title")
 
 - In the experiment page,**memory consumption over time**, **training performance**,**confusion matrix** and **documents** are displayed.
 
+![alt text](train_perf.png "Title")
 
 <h1 style="text-align:center;">How to use it</h1>
 
@@ -61,7 +72,9 @@
 
 - To start recording the memory consumption of an algorithm, just click **record memory** button.To stop recording the memory consumption, insert **monitor.stop()** where the algorithm ends.
 
-`Eg: train_NN():
+`Eg: 
+
+     def train_NN():
         .......
         .......
         return model
@@ -116,4 +129,9 @@
 - All the results saved are displayed in the application. Click the **experiment app** to open the application that has all the documents and tracked metrics. 
 
 - Users can **create many number of documents** in the flask application and **download** them as html.
+
+## Demo video
+
+https://user-images.githubusercontent.com/41319760/159558155-49fdf9c7-5bed-4436-849b-70754ff6609f.mp4
+
 
