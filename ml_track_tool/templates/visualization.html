@@ -239,8 +239,13 @@
     {% endif %}
 
     {% if plots_exist %}
+    <div id="plots_img" class="div_sep" onclick="set_id_global(this.id)">
+        <h1 id="plots_img_title" contenteditable="true" style="text-align:center;">Plots and images</h1>
+    </div>
+    <div id="plot_img">
+        
     {% for i in img_list %}
-    <div class="div_sep" id="div_sep_{{i.2}}" ></div>
+    
     <div class="note_div" id={{i.2}} onclick="set_id_global(this.id)">
         <h2 id="{{i.2}}_title" contenteditable="true" style="text-align:center;">{{i.5}}</h2>
         <hr style="height:1px;border-width:0;color:rgb(95, 96, 99);background-color:rgb(47, 74, 92); width:40%">
@@ -265,9 +270,10 @@
         <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download_img_notes()">
 
     </div>
-
+    <div class="div_sep" id="div_sep_{{i.2}}" ></div>
     
     {% endfor %}
+    </div>
     {% endif %}
 
     {% if note_doc_exists %}
@@ -292,7 +298,7 @@
     {% endif %}
     {% for content in doc_contents %}
     <div id="{{content.id_}}" class="note_div" onclick="set_id_global(this.id)">
-        <h2 id="{{content.id_}}_title" contenteditable="true" style="text-align:center;">{{content.title}}</h2>
+        <h2 id="{{content.id_}}_title" contenteditable="true">{{content.title}}</h2>
         <hr style="width:40%">
         <div id="{{content.id_}}_docu">{{content.contents|safe}}</div>
         <input class="save_note_btn button1" type="submit" value="Save changes" onclick="download()">
@@ -416,7 +422,12 @@
                 document.getElementsByClassName("save_note_btn")[i].style.visibility = "hidden"
             }
             document.getElementById(selected_id+"_title").contentEditable=false
-            var pageSource = document.getElementById(selected_id).innerHTML;
+            if(selected_id!="plots_img"){
+                var pageSource = document.getElementById(selected_id).innerHTML;
+            }
+            else{
+                var pageSource = document.getElementById("plot_img").innerHTML;
+            }
             var downloadLink = document.createElement('a');
             downloadLink.href = "data:text/html," + unescape(encodeURI(escape(pageSource)));
             downloadLink.target = '_blank';

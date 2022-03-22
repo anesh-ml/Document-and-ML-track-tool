@@ -7,8 +7,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '0.0.13'
-DESCRIPTION = 'Ml tracking tool using jupyter extensions'
+VERSION = '0.0.15'
+DESCRIPTION = 'Documetation and Ml tracking tool using jupyter extensions'
 LONG_DESCRIPTION = 'A package that allows users to document their ML experiments.'
 
 # Setting up
@@ -16,7 +16,7 @@ setup(
     name="MlTrackTool",
     version=VERSION,
     author="Anesh",
-    url="https://github.com/anesh-ml/ML_tracking_tool",
+    url="https://github.com/anesh-ml/Document-and-ML-track-tool",
     author_email="analytics955@gmail.com",
     description=DESCRIPTION,
     long_description_content_type="text/markdown",
