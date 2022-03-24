@@ -1,0 +1,9 @@
+Type: Jupyter Notebook Extension
+Compatibility: 3.x, 4.x, 5.x
+Name: Add to doc
+Main: main.js
+Link: README.md
+Description: |
+  Add the notes to the document in the app
+Parameters:
+  - none
