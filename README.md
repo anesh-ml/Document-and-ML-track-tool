@@ -10,7 +10,7 @@
 
 - **Visualize** computation power(GPU and RAM),time taken 
 
-- Users can **share their experiments and analysis** with their team via a shared folder or they could copy the entire experiment folder in their local. Their team needs to pip install the application and mention the absolute path of the experiment folder.
+- Users can **share their experiments and analysis** with their team via a shared folder or they could copy the entire experiment folder to their local. Their team needs to pip install the application and mention the absolute path of the experiment folder.
 
 - Since the application runs in the local, it is **more secure**.
 
@@ -37,6 +37,15 @@
 
 pip install MlTrackTool
 
+### Jupyter extensions installation
+1. conda install -c conda-forge jupyter_contrib_nbextensions
+2. To get the path of jupyter nbextensions **pip show jupyter_contrib_nbextensions**
+3. Copy all the jupyter extensions folders into the path of jupyter nbextensions
+4. cd to the the path of jupyter nbextensions
+5.  jupyter nbextension install add2doc
+6. jupyter nbextension enable add2doc/main
+7. repeat steps 4-6 for all the extensions.
+
 ## About the application
 
 - This is a MVP and some features are yet to be developed
@@ -48,13 +57,17 @@ pip install MlTrackTool
 
 - All these can be done with a button click.
 
-- Users can record the memory consumption, save the performance metrics for each experiment. A comparison chart is created like below so that users can see and know what's best for them. These info are displayed in the **Summary page**
 
-![alt text](summary.png "Title")
+
+
 
 - In the experiment page,**memory consumption over time**, **training performance**,**confusion matrix** and **documents** are displayed.
 
-![alt text](train_perf.png "Title")
+- Users can record the memory consumption, save the performance metrics for each experiment. A comparison chart is created like below so that users can see and know what's best for them. These info are displayed in the **Summary page**
+
+
+![summary_page](https://user-images.githubusercontent.com/41319760/159867937-e6897f02-2ab6-4e02-a42f-bd6d53f4f274.jpg)
+
 
 <h1 style="text-align:center;">How to use it</h1>
 

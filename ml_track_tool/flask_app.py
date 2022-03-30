@@ -84,7 +84,7 @@ def create_application(path):
                     shutil.move(f"{Path.home()}/Downloads/{file_name}",f"{path+'/'+experiment}/document/{file_name}")
 
             notes=request.form.get("text_area_txt")
-            text_file = open(f"{path}/team_notes/notes.txt", "w")
+            text_file = open(f"{path}/{experiment}/team_notes/notes.txt", "w")
             text_file.write(notes)
             text_file.close()
             return redirect(url_for("experiment_page",experiment=experiment))
@@ -185,9 +185,9 @@ def create_application(path):
                     prev_num_doc=int(max(x for x in num_doc if x.isdigit()))+1
                 except Exception as e:
                     pass
-            if not os.path.exists(f"{path}/team_notes/"):
-                os.makedirs(f"{path}/team_notes/")
-                text_file = open(f"{path}/team_notes/notes.txt", "w")
+            if not os.path.exists(f"{path}/{exp_folder}/team_notes/"):
+                os.makedirs(f"{path}/{exp_folder}/team_notes/")
+                text_file = open(f"{path}/{exp_folder}/team_notes/notes.txt", "w")
                 text_file.write("")
                 text_file.close()
             if plot_files:
@@ -216,7 +216,7 @@ def create_application(path):
                     else:
                         continue
                     plot_lists.append((encoded_img,notes_str,file_id,width,f"save_note_{file_id}_txt",title))
-            notes_path=f"{path}/team_notes/notes.txt"
+            notes_path=f"{path}/{exp_folder}/team_notes/notes.txt"
             with open(notes_path) as f:
                 team_notes = f.read()
             return render_template('visualization.html',img_list=plot_lists,plots_exist=plots_exists,page_title=experiment,doc_contents=doc_contents,note_doc=note_doc_dict,prev_num_doc=prev_num_doc,plots_dict=plots_dict,docs_exists=docs_exists,note_doc_exists=note_doc_exists,team_notes=team_notes)
