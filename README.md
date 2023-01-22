@@ -41,7 +41,7 @@ pip install MlTrackTool
 1. conda install -c conda-forge jupyter_contrib_nbextensions
 2. To get the path of jupyter nbextensions **pip show jupyter_contrib_nbextensions**
 3. Copy all the jupyter extensions folders into the path of jupyter nbextensions
-4. cd to the the path of jupyter nbextensions
+4. cd to the the path of **jupyter nbextensions/nbextensions**
 5.  jupyter nbextension install add2doc
 6. jupyter nbextension enable add2doc/main
 7. repeat steps 4-6 for all the extensions.
